@@ -91,7 +91,6 @@ def add_variable_from_mean(data, new_var, vars_lst):
 		
 		num /= len(vars_lst)
 		data[new_var][i] = num
-		print(i)
 	
 	return data
 	
@@ -220,7 +219,7 @@ def wavelet_features(pickle):
 	return det_TKEO_m_data
 
 dic = general_dic(False)
-wf_data = wavelet_features(0)
+wf_data = wavelet_features(1)
 
 wf_data['class'] = data['class']
 
@@ -229,7 +228,7 @@ print(wf_data)
 transf = Normalizer().fit(wf_data)
 wf_data = pd.DataFrame(transf.transform(wf_data, copy=True), columns= wf_data.columns)
 norm_data = wf_data.join(df_sb, how='right')
-norm_data.describe(include='all')"""
+norm_data.describe(include='all')
 
 y: np.ndarray = data.pop('class').values
 X: np.ndarray = data.values
@@ -251,4 +250,4 @@ for clf in estimators:
 
 plt.figure()
 func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
-plt.show()
+plt.show()"""

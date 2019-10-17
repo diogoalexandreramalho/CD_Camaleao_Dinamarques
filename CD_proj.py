@@ -1,12 +1,18 @@
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import matplotlib.pyplot as plt
-import plot_functions as func
+import functions as func
 import re
 import json
 import seaborn as sns
 import numpy as np
 from sklearn.model_selection import train_test_split
+import sklearn.metrics as metrics
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.impute import SimpleImputer
 
 
 register_matplotlib_converters()
@@ -54,6 +60,22 @@ def group_dic(group_data, key_len, write_file):
     
     return group_dic
 
+#creates boxplots for the given data
+def boxplot(group_data, y_min, y_max):
+    columns = group_data.select_dtypes(include='number').columns
+    rows, cols = func.choose_grid(len(columns))
+    plt.figure()
+    fig, axs = plt.subplots(rows, cols, figsize=(cols*4, rows*4), squeeze=False)
+    i, j = 0, 0
+    for n in range(len(columns)):
+        axs[i, j].set_title('Boxplot for %s'%columns[n])
+        if y_min - y_max != 0:
+            axs[i, j].set_ylim(y_min, y_max) 
+        axs[i, j].boxplot(data[columns[n]].dropna().values)
+        i, j = (i + 1, 0) if (n+1) % cols == 0 else (i, j + 1)
+    fig.tight_layout()
+    plt.show()
+
 # get the data associated to a set of variables
 def get_group_of_data(dic,group_name):
     lst = dic[group_name]
@@ -79,6 +101,11 @@ def get_partial_group_of_data(group_data, reg_expression):
     return data[group_lst]
 
 
+def delete_columns(lst,data):
+	for var in lst:
+		del data[var]
+	return data
+
 #Produz todas as variaveis que tem o mesmo sufixo
 def produce_allvariables(s,n):
     lst = []
@@ -99,6 +126,12 @@ def add_variable_from_mean(new_var, var_lst):
         
         num/= len(var_lst)
         data[new_var][i] = num
+    
+    for var in var_lst:
+        del data[var]
+
+
+
 
 
 
@@ -113,12 +146,13 @@ group_dic = group_dic(group_data, 10, False)
 
 ######### TQWT FEATURES ############################
 
-tqwt_features = get_group_of_data(dic,"TQWT Features")
+#tqwt_features = get_group_of_data(dic,"TQWT Features")
 
-print(data.describe())
+#print(data.describe())
 
 
 ######### TQWT GROUPS ################################
+"""
 
 tqwt_energy = get_partial_group_of_data(tqwt_features, "^tqwt_energy.*")
 tqwt_entropy_shannon = get_partial_group_of_data(tqwt_features, "^tqwt_entropy_shannon.*")
@@ -133,7 +167,8 @@ tqwt_maxValue = get_partial_group_of_data(tqwt_features, "^tqwt_maxValue.*")
 tqwt_skewnessValue = get_partial_group_of_data(tqwt_features, "^tqwt_skewnessValue.*")
 tqwt_kurtosisValue = get_partial_group_of_data(tqwt_features, "^tqwt_kurtosisValue.*")
 
-
+print(tqwt_skewnessValue)
+"""
 
 ####### HEATMAPS TQWT FEATURES #########################
 
@@ -185,7 +220,7 @@ add_variable_from_mean("tqwt_TKEO_mean",tqwt_TKEO_mean_lst)
 add_variable_from_mean("tqwt_TKEO_std",tqwt_TKEO_std_lst)
 add_variable_from_mean("tqwt_medianValue",tqwt_medianValue_lst)
 add_variable_from_mean("tqwt_meanValue",tqwt_meanValue_lst)
-add_variable_from_mean("tqwt_stdValue",tqwt_energy_lst)
+add_variable_from_mean("tqwt_stdValue",tqwt_stdValue_lst)
 add_variable_from_mean("tqwt_minValue",tqwt_minValue_lst)
 add_variable_from_mean("tqwt_maxValue",tqwt_maxValue_lst)
 add_variable_from_mean("tqwt_skewnessValue",tqwt_skewnessValue_lst)
@@ -195,7 +230,74 @@ add_variable_from_mean("tqwt_kurtosisValue",tqwt_kurtosisValue_lst)
 print(data)
 
 
+############  NORMALIZATION  #######################
+
+
+transf = MinMaxScaler(data, copy=True)
+data = pd.DataFrame(transf.transform(data), columns= data.columns)
+
+
 ###########  CLASSIFICATION ###########################
+
+
+y: np.ndarray = data.pop('class').values
+X: np.ndarray = data.values
+labels = pd.unique(y)
+
+trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+
+
+
+
+def knn():
+
+
+    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+    dist = ['manhattan', 'euclidean', 'chebyshev']
+    values = {}
+    for d in dist:
+        yvalues = []
+        for n in nvalues:
+            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+            knn.fit(trnX, trnY)
+            prdY = knn.predict(tstX)
+            yvalues.append(metrics.accuracy_score(tstY, prdY))
+        values[d] = yvalues
+
+    plt.figure()
+    func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
+    plt.show()
+
+def naive_bayes():
+
+    clf = GaussianNB()
+    clf.fit(trnX, trnY)
+    prdY = clf.predict(tstX)
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+    
+    estimators = {'GaussianNB': GaussianNB(), 
+              'MultinomialNB': MultinomialNB(), 
+              'BernoulyNB': BernoulliNB()}
+
+    xvalues = []
+    yvalues = []
+    for clf in estimators:
+        xvalues.append(clf)
+        estimators[clf].fit(trnX, trnY)
+        prdY = estimators[clf].predict(tstX)
+        yvalues.append(metrics.accuracy_score(tstY, prdY))
+
+    plt.figure()
+    func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
+    plt.show()
+
+
+minmaxscaler
+
+
+knn()
+naive_bayes()
+
 
 """
 
