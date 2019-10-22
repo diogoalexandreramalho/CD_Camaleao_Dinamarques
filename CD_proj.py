@@ -19,7 +19,6 @@ register_matplotlib_converters()
 data = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 data2 = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.')
 
-print(data)
 
 
 # Creates a dic with a list of columns names associated to the titles given in the csv file
@@ -205,12 +204,12 @@ tqwt_maxValue_lst = produce_allvariables("tqwt_maxValue_dec_",37)
 tqwt_skewnessValue_lst = produce_allvariables("tqwt_skewnessValue_dec_",37)
 tqwt_kurtosisValue_lst = produce_allvariables("tqwt_kurtosisValue_dec_",37)
 
-print(tqwt_entropy_shannon_lst)
 
 
 
 
 ######## ADD NEW VARIABLE IN DATASET THAT REPRESENTS A GROUP ######
+
 
 
 add_variable_from_mean("tqwt_energy",tqwt_energy_lst)
@@ -227,32 +226,39 @@ add_variable_from_mean("tqwt_skewnessValue",tqwt_skewnessValue_lst)
 add_variable_from_mean("tqwt_kurtosisValue",tqwt_kurtosisValue_lst)
 
 
-print(data)
 
 
 ############  NORMALIZATION  #######################
 
 
-transf = MinMaxScaler(data, copy=True)
-data = pd.DataFrame(transf.transform(data), columns= data.columns)
+#transf = MinMaxScaler(data, copy=True)
+#data = pd.DataFrame(transf.transform(data), columns= data.columns)
+
+
+scaler = MinMaxScaler()
+scaler.fit(data)
+MinMaxScaler(copy=True,feature_range=(0,1))
+norm_data = pd.DataFrame(scaler.transform(data), columns = data.columns)
+print(norm_data.keys())
 
 
 ###########  CLASSIFICATION ###########################
 
 
-y: np.ndarray = data.pop('class').values
-X: np.ndarray = data.values
+y: np.ndarray = norm_data.pop('class').values
+X: np.ndarray = norm_data.values
 labels = pd.unique(y)
+
 
 trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
 
 
 
-
 def knn():
 
+    ##### BEST N = 5 #######
 
-    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41]
     dist = ['manhattan', 'euclidean', 'chebyshev']
     values = {}
     for d in dist:
@@ -292,7 +298,6 @@ def naive_bayes():
     plt.show()
 
 
-minmaxscaler
 
 
 knn()
