@@ -101,8 +101,8 @@ def add_variable_from_mean(data, new_var, vars_lst, delete):
 		data[new_var][i] = num
 	
 	if delete:
-		for var in var_lst:
-    		del data[var]
+		for var in vars_lst:
+			del data[var]
 	
 	return data
 
@@ -118,11 +118,11 @@ def delete_columns(lst,data):
 
 #Produz todas as variaveis que tem o mesmo sufixo
 def produce_allvariables(s,n):
-    lst = []
-    for i in range(1,n):
-        v = s + str(i)
-        lst.append(v)
-    return lst
+	lst = []
+	for i in range(1,n):
+		v = s + str(i)
+		lst.append(v)
+	return lst
 
 
 
@@ -298,9 +298,9 @@ def tqwt_features(dic, data):
 	return data
 
 
-wf_data = wavelet_features(1)
-wf_data['class'] = data['class']
-print(wf_data)
+#wf_data = wavelet_features(1)
+#wf_data['class'] = data['class']
+#print(wf_data)
 
 
 
@@ -339,46 +339,46 @@ trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
 
 def knn():
 
-    ##### BEST N = 5 #######
+	##### BEST N = 5 #######
 
-    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41]
-    dist = ['manhattan', 'euclidean', 'chebyshev']
-    values = {}
-    for d in dist:
-        yvalues = []
-        for n in nvalues:
-            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
-            knn.fit(trnX, trnY)
-            prdY = knn.predict(tstX)
-            yvalues.append(metrics.accuracy_score(tstY, prdY))
-        values[d] = yvalues
+	nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41]
+	dist = ['manhattan', 'euclidean', 'chebyshev']
+	values = {}
+	for d in dist:
+		yvalues = []
+		for n in nvalues:
+			knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+			knn.fit(trnX, trnY)
+			prdY = knn.predict(tstX)
+			yvalues.append(metrics.accuracy_score(tstY, prdY))
+		values[d] = yvalues
 
-    plt.figure()
-    func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
-    plt.show()
+	plt.figure()
+	func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
+	plt.show()
 
 def naive_bayes():
 
-    clf = GaussianNB()
-    clf.fit(trnX, trnY)
-    prdY = clf.predict(tstX)
-    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
-    
-    estimators = {'GaussianNB': GaussianNB(), 
-              'MultinomialNB': MultinomialNB(), 
-              'BernoulyNB': BernoulliNB()}
+	clf = GaussianNB()
+	clf.fit(trnX, trnY)
+	prdY = clf.predict(tstX)
+	cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+	
+	estimators = {'GaussianNB': GaussianNB(), 
+			  'MultinomialNB': MultinomialNB(), 
+			  'BernoulyNB': BernoulliNB()}
 
-    xvalues = []
-    yvalues = []
-    for clf in estimators:
-        xvalues.append(clf)
-        estimators[clf].fit(trnX, trnY)
-        prdY = estimators[clf].predict(tstX)
-        yvalues.append(metrics.accuracy_score(tstY, prdY))
+	xvalues = []
+	yvalues = []
+	for clf in estimators:
+		xvalues.append(clf)
+		estimators[clf].fit(trnX, trnY)
+		prdY = estimators[clf].predict(tstX)
+		yvalues.append(metrics.accuracy_score(tstY, prdY))
 
-    plt.figure()
-    func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
-    plt.show()
+	plt.figure()
+	func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
+	plt.show()
 
 
 
