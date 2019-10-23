@@ -1,24 +1,28 @@
-import numpy as np
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import matplotlib.pyplot as plt
 import plot_functions as func
-from sklearn.model_selection import train_test_split
-import sklearn.metrics as metrics
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn.preprocessing import Normalizer
 import re
 import json
 import seaborn as sns
+import numpy as np
+from sklearn.model_selection import train_test_split
+import sklearn.metrics as metrics
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.impute import SimpleImputer
 
 
 register_matplotlib_converters()
 data = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-data2 = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.')
+
 
 
 # Creates a dic with a list of columns names associated to the titles given in the csv file
 def general_dic(write_file):
+	data2 = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.')
 	dic = {"Start": []}
 	current_title = "Start"
 
@@ -35,6 +39,7 @@ def general_dic(write_file):
 			file.write(json.dumps(dic))
 		
 	return dic
+
 
 # receives a group of columns and divides them according to their initial letters
 def group_dic(group_data, key_len, write_file):
@@ -61,6 +66,8 @@ def get_data_from_dic(dic,group_name):
 	lst = dic[group_name]
 	return data[lst]
 
+
+# get group of data associated based on a regular expression
 def get_data_by_expression(group_data, reg_expression):
 	group_lst = []
 
@@ -80,8 +87,9 @@ def group_correlation(group_data):
 	plt.title('Correlation analysis')
 	plt.show()
 
+
 # calculates new variable from the mean of a group of variables
-def add_variable_from_mean(data, new_var, vars_lst):
+def add_variable_from_mean(data, new_var, vars_lst, delete):
 	data.insert(0, new_var, 0)
 
 	for i in range(756):
@@ -92,34 +100,46 @@ def add_variable_from_mean(data, new_var, vars_lst):
 		num /= len(vars_lst)
 		data[new_var][i] = num
 	
+	if delete:
+		for var in var_lst:
+    		del data[var]
+	
 	return data
+
+
 	
 
+# deletes given columns from data set
 def delete_columns(lst,data):
 	for var in lst:
 		del data[var]
 	return data
 
 
+#Produz todas as variaveis que tem o mesmo sufixo
+def produce_allvariables(s,n):
+    lst = []
+    for i in range(1,n):
+        v = s + str(i)
+        lst.append(v)
+    return lst
 
-####### DISTRIBUTIONS ############
 
 
 
 ##############################
-#### Bandwidth Parameters ####
+####### DISTRIBUTIONS ########
 ##############################
 
-def bandwidth_parameters():
+
+
+def bandwidth_parameters(dic):
 	bp_data = get_data_from_dic(dic,"Bandwidth Parameters")
 	group_correlation(bp_data)
 
 
-###########################
-#### Baseline Features ####
-###########################
 
-def baseline_features():
+def baseline_features(dic):
 	bf_data = get_data_from_dic(dic,"Baseline Features")
 
 	shimmer = get_data_by_expression(bf_data, "^.*Shimmer")
@@ -130,29 +150,23 @@ def baseline_features():
 
 
 
-#############################
-#### Formant Frequencies ####
-#############################
-
-def formant_frequencies():
+def formant_frequencies(dic):
 	ff_data = get_data_from_dic(dic,"Baseline Features")
 	group_correlation(ff_data)
 
 
-##############################
-#### Intensity Parameters ####
-##############################
 
-def intensity_parameters():
+def intensity_parameters(dic):
 	ip_data = get_data_from_dic(dic,"Intensity Parameters")
 	group_correlation(ip_data)
 
-##############
-#### MFCC ####
-##############
 
-def mfcc():
+
+def mfcc(dic):
 	mfcc_data = get_data_from_dic(dic,"MFCC ")
+
+	mfcc_E = get_data_by_expression(mfcc_data,"^E")
+	group_correlation(mfcc_E)
 
 	mfcc_std = get_data_by_expression(mfcc_data,"^std_.*")
 	group_correlation(mfcc_std)
@@ -160,24 +174,16 @@ def mfcc():
 	mfcc_mean = get_data_by_expression(mfcc_data,"^mean_.*")
 	group_correlation(mfcc_mean)
 
-	mfcc_E = get_data_by_expression(mfcc_data,"^E")
-	group_correlation(mfcc_E)
 
 
-####################
-#### Vocal Fold ####
-####################
 
-def vocal_fold():
+def vocal_fold(dic):
 	vf_data = get_data_from_dic(dic,"Vocal Fold")
 
 
-##########################
-#### Wavelet Features ####
-##########################
 
 
-def wavelet_features(pickle):
+def wavelet_features(dic, pickle):
 	wf_data = get_data_from_dic(dic,"Wavelet Features")
 	dic_by_len = group_dic(wf_data, 13, False)
 	
@@ -218,36 +224,186 @@ def wavelet_features(pickle):
 
 	return det_TKEO_m_data
 
-dic = general_dic(False)
+
+
+def tqwt_features(dic, data):
+
+	#tqwt_data = get_group_of_data(dic,"TQWT Features")
+	#print(data.describe())
+
+	"""
+	# groups of data
+	tqwt_energy = get_data_by_expression(tqwt_data, "^tqwt_energy.*")
+	tqwt_entropy_shannon = get_data_by_expression(tqwt_data, "^tqwt_entropy_shannon.*")
+	tqwt_entropy_log = get_data_by_expression(tqwt_data, "^tqwt_entropy_log.*")
+	tqwt_TKEO_mean = get_data_by_expression(tqwt_data, "^tqwt_TKEO_mean.*")
+	tqwt_TKEO_std = get_data_by_expression(tqwt_data, "^tqwt_TKEO_std.*")
+	tqwt_medianValue = get_data_by_expression(tqwt_data, "^tqwt_medianValue.*")
+	tqwt_meanValue = get_data_by_expression(tqwt_data, "^tqwt_meanValue.*")
+	tqwt_stdValue = get_data_by_expression(tqwt_data, "^tqwt_stdValue.*")
+	tqwt_minValue = get_data_by_expression(tqwt_data, "^tqwt_minValue.*")
+	tqwt_maxValue = get_data_by_expression(tqwt_data, "^tqwt_maxValue.*")
+	tqwt_skewnessValue = get_data_by_expression(tqwt_data, "^tqwt_skewnessValue.*")
+	tqwt_kurtosisValue = get_data_by_expression(tqwt_data, "^tqwt_kurtosisValue.*")
+	"""
+
+	
+	"""
+	# heatmaps for different groups
+	group_correlation(tqwt_energy)
+	group_correlation(tqwt_entropy_shannon)
+	group_correlation(tqwt_entropy_log)
+	group_correlation(tqwt_TKEO_mean)
+	group_correlation(tqwt_TKEO_std)
+	group_correlation(tqwt_medianValue)
+	group_correlation(tqwt_meanValue)
+	group_correlation(tqwt_stdValue)
+	group_correlation(tqwt_minValue)
+	group_correlation(tqwt_maxValue)
+	group_correlation(tqwt_skewnessValue)
+	group_correlation(tqwt_kurtosisValue)
+
+	"""
+
+	# produce list of variables for a group  
+	tqwt_energy_lst = produce_allvariables("tqwt_energy_dec_",37)
+	tqwt_entropy_shannon_lst = produce_allvariables("tqwt_entropy_shannon_dec_",37)
+	tqwt_entropy_log_lst = produce_allvariables("tqwt_entropy_log_dec_",37)
+	tqwt_TKEO_mean_lst = produce_allvariables("tqwt_TKEO_mean_dec_",37)
+	tqwt_TKEO_std_lst = produce_allvariables("tqwt_TKEO_std_dec_",37)
+	tqwt_medianValue_lst = produce_allvariables("tqwt_medianValue_dec_",37)
+	tqwt_meanValue_lst = produce_allvariables("tqwt_meanValue_dec_",37)
+	tqwt_stdValue_lst = produce_allvariables("tqwt_stdValue_dec_",37)
+	tqwt_minValue_lst = produce_allvariables("tqwt_minValue_dec_",37)
+	tqwt_maxValue_lst = produce_allvariables("tqwt_maxValue_dec_",37)
+	tqwt_skewnessValue_lst = produce_allvariables("tqwt_skewnessValue_dec_",37)
+	tqwt_kurtosisValue_lst = produce_allvariables("tqwt_kurtosisValue_dec_",37)
+
+
+
+	# add new variable in a dataset that represents a group ######
+	data = add_variable_from_mean(data, "tqwt_energy",tqwt_energy_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_entropy_shannon",tqwt_entropy_shannon_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_entropy_log",tqwt_entropy_log_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_TKEO_mean",tqwt_TKEO_mean_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_TKEO_std",tqwt_TKEO_std_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_medianValue",tqwt_medianValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_meanValue",tqwt_meanValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_stdValue",tqwt_stdValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_minValue",tqwt_minValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_maxValue",tqwt_maxValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_skewnessValue",tqwt_skewnessValue_lst, 1)
+	data = add_variable_from_mean(data, "tqwt_kurtosisValue",tqwt_kurtosisValue_lst, 1)
+
+	return data
+
+
 wf_data = wavelet_features(1)
-
 wf_data['class'] = data['class']
-
 print(wf_data)
-"""
-transf = Normalizer().fit(wf_data)
-wf_data = pd.DataFrame(transf.transform(wf_data, copy=True), columns= wf_data.columns)
-norm_data = wf_data.join(df_sb, how='right')
-norm_data.describe(include='all')
 
-y: np.ndarray = data.pop('class').values
-X: np.ndarray = data.values
+
+
+#########################################
+############  NORMALIZATION  ############
+#########################################
+
+
+#transf = MinMaxScaler(data, copy=True)
+#data = pd.DataFrame(transf.transform(data), columns= data.columns)
+
+
+scaler = MinMaxScaler()
+scaler.fit(data)
+MinMaxScaler(copy=True,feature_range=(0,1))
+norm_data = pd.DataFrame(scaler.transform(data), columns = data.columns)
+print(norm_data.keys())
+
+
+
+
+
+#######################################
+###########  CLASSIFICATION ###########
+#######################################
+
+
+y: np.ndarray = norm_data.pop('class').values
+X: np.ndarray = norm_data.values
 labels = pd.unique(y)
+
 
 trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
 
-estimators = {'GaussianNB': GaussianNB(), 
+
+
+def knn():
+
+    ##### BEST N = 5 #######
+
+    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41]
+    dist = ['manhattan', 'euclidean', 'chebyshev']
+    values = {}
+    for d in dist:
+        yvalues = []
+        for n in nvalues:
+            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+            knn.fit(trnX, trnY)
+            prdY = knn.predict(tstX)
+            yvalues.append(metrics.accuracy_score(tstY, prdY))
+        values[d] = yvalues
+
+    plt.figure()
+    func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
+    plt.show()
+
+def naive_bayes():
+
+    clf = GaussianNB()
+    clf.fit(trnX, trnY)
+    prdY = clf.predict(tstX)
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+    
+    estimators = {'GaussianNB': GaussianNB(), 
               'MultinomialNB': MultinomialNB(), 
               'BernoulyNB': BernoulliNB()}
 
-xvalues = []
-yvalues = []
-for clf in estimators:
-    xvalues.append(clf)
-    estimators[clf].fit(trnX, trnY)
-    prdY = estimators[clf].predict(tstX)
-    yvalues.append(metrics.accuracy_score(tstY, prdY))
+    xvalues = []
+    yvalues = []
+    for clf in estimators:
+        xvalues.append(clf)
+        estimators[clf].fit(trnX, trnY)
+        prdY = estimators[clf].predict(tstX)
+        yvalues.append(metrics.accuracy_score(tstY, prdY))
 
-plt.figure()
-func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
-plt.show()"""
+    plt.figure()
+    func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
+    plt.show()
+
+
+
+
+knn()
+naive_bayes()
+
+
+
+"""
+
+data = tqwt_energy
+print(data.columns)
+
+y: np.ndarray = data.pop('tqwt_energy_dec_1').values
+X: np.ndarray = data.values
+labels: np.ndarray = pd.unique(y)
+
+trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+
+
+clf = GaussianNB()
+clf.fit(trnX, trnY)
+prdY = clf.predict(tstX)
+cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+func.plot_confusion_matrix(plt.gca(), cnf_mtx, labels)
+
+"""
