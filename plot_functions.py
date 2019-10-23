@@ -60,9 +60,9 @@ def multiple_bar_chart(ax: plt.Axes, xvalues: list, yvalues: dict, title: str, x
     ax.legend(loc='lower center', ncol=len(yvalues), bbox_to_anchor=(0.5, -0.2), fancybox = True, shadow = True) 
 
 
-def boxplot(group_data, y_min, y_max):
+def boxplot(group_data, y_min, y_max, data):
     columns = group_data.select_dtypes(include='number').columns
-    rows, cols = func.choose_grid(len(columns))
+    rows, cols = choose_grid(len(columns))
     plt.figure()
     fig, axs = plt.subplots(rows, cols, figsize=(cols*4, rows*4), squeeze=False)
     i, j = 0, 0
