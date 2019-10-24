@@ -6,7 +6,6 @@ import plot_functions as func
 
 from pandas.plotting import register_matplotlib_converters
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 
 '''
