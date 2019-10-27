@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sklearn.metrics as metrics
 import plot_functions as func
+from subprocess import call
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import export_graphviz
@@ -35,7 +36,21 @@ def decision_tree(data: pd.DataFrame):
         func.multiple_line_chart(axs[0, k], min_samples_leaf, values, 'Decision Trees with %s criteria'%f, 'nr estimators', 
                                  'accuracy', percentage=True)
 
+    #plt.show()
+
+    tree = DecisionTreeClassifier(max_depth=3)
+    tree.fit(trnX, trnY)
+
+    dot_data = export_graphviz(tree, out_file='dtree.dot', filled=True, rounded=True, special_characters=True)  
+    # Convert to png
+    from subprocess import call
+    call(['dot', '-Tpng', 'dtree.dot', '-o', 'dtree.png', '-Gdpi=600'])
+
+    plt.figure(figsize = (14, 18))
+    plt.imshow(plt.imread('dtree.png'))
+    plt.axis('off')
     plt.show()
+
     return 0
 
 

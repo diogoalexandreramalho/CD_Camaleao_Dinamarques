@@ -67,13 +67,15 @@ def balance_SMOTE(data, strategy: str, random_state=42):
     return new_data    
 
 
-def run(data: pd.DataFrame, strategy: str, random_number):
+def run(data: pd.DataFrame, strategy: str, random_number, plot):
     register_matplotlib_converters()
     
     #This needs to be a copy
     data1 = data.copy(deep=True)
-    
-    unbalanced_data(data1) #Shows unbalnced data
+
+    if plot:
+        unbalanced_data(data) #Shows unbalnced data
+
     new_data = balance_SMOTE(data1, strategy, random_number) # Shows Smote, and returns new_data
     
     new_data.columns = data.columns.tolist()
