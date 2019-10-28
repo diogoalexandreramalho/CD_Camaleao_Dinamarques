@@ -6,24 +6,16 @@ import re
 import json
 import seaborn as sns
 import numpy as np
-from sklearn.model_selection import train_test_split
-import sklearn.metrics as metrics
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import Normalizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.impute import SimpleImputer
-from imblearn.over_sampling import SMOTE, RandomOverSampler
 
 
 register_matplotlib_converters()
-data = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 
 
 
 # Creates a dic with a list of columns names associated to the titles given in the csv file
 def general_dic(write_file):
-	data2 = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.')
+	data2 = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.')
 	dic = {"Start": []}
 	current_title = "Start"
 
@@ -84,7 +76,7 @@ def get_data_by_expression(group_data, reg_expression):
 def group_correlation(group_data):
 	plt.figure(figsize=[14,7])
 	corr_mtx = group_data.corr()
-	sns.heatmap(corr_mtx, xticklabels=corr_mtx.columns, yticklabels=corr_mtx.columns, annot=False, cmap='Blues')
+	sns.heatmap(corr_mtx, xticklabels=corr_mtx.columns, yticklabels=corr_mtx.columns, annot=True, cmap='Blues')
 	plt.title('Correlation analysis')
 	plt.show()
 
@@ -100,8 +92,9 @@ def add_variable_from_mean(data, new_var, vars_lst, delete):
 		
 		num /= len(vars_lst)
 		
-		data[new_var][i] = num
+		data.loc[i,new_var] = num
 	
+
 	if delete:
 		for var in vars_lst:
 			del data[var]
@@ -110,14 +103,10 @@ def add_variable_from_mean(data, new_var, vars_lst, delete):
 	return data
 
 
-	
-
-# deletes given columns from data set
-def delete_columns(lst,data):
-	for var in lst:
+def delete_columns(data, vars_lst):
+	for var in vars_lst:
 		del data[var]
 	return data
-
 
 #Produz todas as variaveis que tem o mesmo sufixo
 def produce_allvariables(s,n):
@@ -136,45 +125,129 @@ def produce_allvariables(s,n):
 
 
 
-def bandwidth_parameters(dic):
+def baseline_features(dic, ratio, correlations, pickles, write):
+	if not write:
+		if ratio == 0.97:
+			new_bf_data = pd.read_pickle("Pickles/Baseline/baseline_97.pkl")
+		elif ratio == 0.95:
+			new_bf_data = pd.read_pickle("Pickles/Baseline/baseline_95.pkl")
+		elif ratio == 0.9:
+			new_bf_data = pd.read_pickle("Pickles/Baseline/baseline_90.pkl")
+		elif ratio == 0.85:
+			new_bf_data = pd.read_pickle("Pickles/Baseline/baseline_85.pkl")
+		elif ratio == 0.8:
+			new_bf_data = pd.read_pickle("Pickles/Baseline/baseline_80.pkl")
+
+	else:
+		bf_data = get_data_from_dic(dic,"Baseline Features")
+
+		# Shimmer
+		if ratio > 0.89:
+			if pickles[0]:
+				shimmer = get_data_by_expression(bf_data, "^.*Shimmer")
+				lst = list(shimmer.columns)
+				lst.remove('apq11Shimmer')
+				shimmer = add_variable_from_mean(shimmer, 'shimmer_master', lst, True)
+				shimmer.to_pickle("Pickles/Baseline/shimmer_+89.pkl")
+			else:
+				shimmer = pd.read_pickle("Pickles/Baseline/shimmer_+89.pkl")
+		else:
+			if pickles[0]:
+				shimmer = get_data_by_expression(bf_data, "^.*Shimmer")
+				shimmer = add_variable_from_mean(shimmer, 'shimmer_master', list(shimmer.columns), True)
+				shimmer.to_pickle("Pickles/Baseline/shimmer_-89.pkl")
+			else:
+				shimmer = pd.read_pickle("Pickles/Baseline/shimmer_-89.pkl")
+
+
+		# Jitter
+		if pickles[1]:
+			jitter = get_data_by_expression(bf_data, "^.*Jitter")
+			jitter = add_variable_from_mean(jitter, 'jitter_master', list(jitter.columns), True)
+			jitter.to_pickle("Pickles/Baseline/jitter.pkl")
+		else:
+			jitter = pd.read_pickle("Pickles/Baseline/jitter.pkl")
+
+
+		# Harmonicity
+		if ratio > 0.82:
+			harmonicity = get_data_by_expression(bf_data, "Harmonicity$")
+		else:
+			harmonicity = get_data_by_expression(bf_data, "Harmonicity$")
+			del harmonicity['meanHarmToNoiseHarmonicity']
+
+		# Pulses
+		pulses = get_data_by_expression(bf_data, "^.*Pulses")
+		del pulses['numPeriodsPulses']
+
+		#group_correlation(shimmer)
+		#group_correlation(jitter)
+		#group_correlation(harmonicity)
+		#group_correlation(pulses)
+
+		new_bf_data = data[['PPE','DFA', 'RPDE']]
+		new_bf_data = pd.concat([new_bf_data, pulses, jitter, shimmer, harmonicity], axis=1, sort=False)
+
+		if ratio == 0.97:
+			new_bf_data.to_pickle("Pickles/Baseline/baseline_97.pkl")
+		elif ratio == 0.95:
+			new_bf_data.to_pickle("Pickles/Baseline/baseline_95.pkl")
+		elif ratio == 0.9:
+			new_bf_data.to_pickle("Pickles/Baseline/baseline_90.pkl")
+		elif ratio == 0.85:
+			new_bf_data.to_pickle("Pickles/Baseline/baseline_85.pkl")
+		elif ratio == 0.8:
+			new_bf_data.to_pickle("Pickles/Baseline/baseline_80.pkl")
+	
+	
+	return new_bf_data
+
+
+
+
+def bandwidth_parameters(dic, correlation):
 	bp_data = get_data_from_dic(dic,"Bandwidth Parameters")
-	#group_correlation(bp_data)
+	if correlation:
+		group_correlation(bp_data)
 	return bp_data
 
 
 
-def baseline_features(dic):
-	bf_data = get_data_from_dic(dic,"Baseline Features")
-
-	shimmer = get_data_by_expression(bf_data, "^.*Shimmer")
-	group_correlation(shimmer)
-
-	pulses = get_data_by_expression(bf_data, "^.*Pulses")
-	group_correlation(pulses)
-
-
-
-def formant_frequencies(dic):
+def formant_frequencies(dic, correlation):
 	ff_data = get_data_from_dic(dic,"Formant Frequencies")
-	#group_correlation(ff_data)
+	if correlation:
+		group_correlation(ff_data)
 	return ff_data
 
 
 
-def intensity_parameters(dic, correlation):
-	ip_data = get_data_from_dic(dic,"Intensity Parameters")
-	if correlation:
-		group_correlation(ip_data)
+def intensity_parameters(dic, ratio, correlations, write):
+	if not write:
+		if ratio == 0.97 or ratio == 0.95:
+			ip_data = pd.read_pickle("Pickles/Intensity/intensity_+91.pkl")
+		elif ratio == 0.9 or ratio == 0.85 or ratio == 0.8:
+			ip_data = pd.read_pickle("Pickles/Intensity/intensity_-91.pkl")
 	else:
-		return ip_data['meanIntensity']
+		ip_data = get_data_from_dic(dic,"Intensity Parameters")
 
+		if ratio > 0.91:
+			del ip_data['maxIntensity']
+		else:
+			ip_data = delete_columns(ip_data, ['maxIntensity', 'minIntensity'])
+		
+		if ratio == 0.97 or ratio == 0.95:
+			ip_data.to_pickle("Pickles/Intensity/intensity_+91.pkl")
+		elif ratio == 0.9 or ratio == 0.85 or ratio == 0.8:
+			ip_data.to_pickle("Pickles/Intensity/intensity_-91.pkl")
 
-
+	return ip_data
+		
 
 
 def mfcc(dic):
 	mfcc_data = get_data_from_dic(dic,"MFCC ")
 
+	"""
 	# std
 	std = get_data_by_expression(mfcc_data,"^std_.*")
 	group_correlation(std)
@@ -214,12 +287,16 @@ def mfcc(dic):
 	# std_deltas and mean_deltas
 	mean_std_deltas = pd.concat([mean_delta, std_delta], axis=1, sort=False)
 	group_correlation(mean_std_deltas)
+	"""
+
+	return mfcc_data
 
 
 
 
 def vocal_fold(dic):
 	vf_data = get_data_from_dic(dic,"Vocal Fold")
+	return vf_data
 
 
 
@@ -241,8 +318,9 @@ def wavelet_features(dic, write_pickle):
 	group_correlation(det_entropy_data)
 	"""
 
-	###### det_TKEO_mean ######
 
+	###### det_TKEO_mean ######
+	"""
 	if write_pickle:
 		det_TKEO_m_data = wf_data[dic_by_len['det_TKEO_mean']]
 		det_TKEO_m_1_to_3_lst = ['det_TKEO_mean_1_coef', 'det_TKEO_mean_2_coef', 'det_TKEO_mean_3_coef']
@@ -259,17 +337,16 @@ def wavelet_features(dic, write_pickle):
 		#group_correlation(det_TKEO_m_data)
 	else:
 		det_TKEO_m_data = pd.read_pickle("det_TKEO_m_data.pkl")
+	"""
+	return wf_data
 
-	return det_TKEO_m_data
 
 
-
-def tqwt_features(dic, data):
+def tqwt_features(dic):
 
 	tqwt_data = get_data_from_dic(dic,"TQWT Features")
-	#print(data.describe())
 
-	
+	"""
 	# groups of data
 	tqwt_energy = get_data_by_expression(tqwt_data, "^tqwt_energy.*")
 	tqwt_entropy_shannon = get_data_by_expression(tqwt_data, "^tqwt_entropy_shannon.*")
@@ -300,7 +377,7 @@ def tqwt_features(dic, data):
 	tqwt_kurtosisValue_lst = produce_allvariables("tqwt_kurtosisValue_dec_",37)
 
 
-	"""
+	
 	# add new variable in a dataset that represents a group ######
 	data = add_variable_from_mean(data, "tqwt_energy",tqwt_energy_lst, 1)
 	data = add_variable_from_mean(data, "tqwt_entropy_shannon",tqwt_entropy_shannon_lst, 1)
@@ -314,7 +391,7 @@ def tqwt_features(dic, data):
 	data = add_variable_from_mean(data, "tqwt_maxValue",tqwt_maxValue_lst, 1)
 	data = add_variable_from_mean(data, "tqwt_skewnessValue",tqwt_skewnessValue_lst, 1)
 	data = add_variable_from_mean(data, "tqwt_kurtosisValue",tqwt_kurtosisValue_lst, 1)
-	"""
+	
 
 	# add new variable in a dataset that represents a group ######
 	print("1/12")
@@ -358,180 +435,30 @@ def tqwt_features(dic, data):
 	group_correlation(tqwt_skewnessValue)
 	group_correlation(tqwt_kurtosisValue)
 
-
-	#return data
-
-
-dic = general_dic(False)
+	"""
+	return tqwt_data
 
 
-#mfcc(dic)
-#ff_data = formant_frequencies(dic)
-#bp_data = bandwidth_parameters(dic)
-#ip_data = intensity_parameters(dic, 0)
-
-#new_data = pd.concat([ff_data, bp_data, ip_data, data['class']], axis=1, sort=False)
-#print(new_data)
-#tqwt_features(dic, data)
+#dic = general_dic(False)
 
 
+#sum = 0
 
-
-
-
-target_count = data['class'].value_counts()
-
-plt.figure()
-plt.title('Class balance')
-plt.bar(target_count.index, target_count.values)
-plt.show()
-
-min_class = target_count.idxmin()
-ind_min_class = target_count.index.get_loc(min_class)
-
-print('Minority class:', target_count[ind_min_class])
-print('Majority class:', target_count[1-ind_min_class])
-print('Proportion:', round(target_count[ind_min_class] / target_count[1-ind_min_class], 2), ': 1')
-
-
-##### SMOTE #####
-
-RANDOM_STATE = 42
-values = {'Original': [target_count.values[ind_min_class], target_count.values[1-ind_min_class]]}
-
-df_class_min = data[data['class'] == min_class]
-df_class_max = data[data['class'] != min_class] 
-
-df_under = df_class_max.sample(len(df_class_min))
-values['UnderSample'] = [target_count.values[ind_min_class], len(df_under)]
-
-df_over = df_class_min.sample(len(df_class_max), replace=True)
-values['OverSample'] = [len(df_over), target_count.values[1-ind_min_class]]
-
-smote = SMOTE(ratio='minority', random_state=RANDOM_STATE)
-
-y = data.pop('class').values
-print(data)
-
-X = data.values
-_, smote_y = smote.fit_sample(X, y)
-smote_target_count = pd.Series(smote_y).value_counts()
-values['SMOTE'] = [smote_target_count.values[ind_min_class], smote_target_count.values[1-ind_min_class]]
-
-plt.figure()
-func.multiple_bar_chart(plt.gca(), 
-                        [target_count.index[ind_min_class], target_count.index[1-ind_min_class]], 
-                        values, 'Target', 'frequency', 'Class balance')
-plt.show()
+#bf_data = baseline_features(dic, 0.8, [0,0,0,0], [0,0,1,1], False)
+#ip_data = intensity_parameters(dic, 0.90, [0,0,0], True)
+#ff_data = formant_frequencies(dic, False)
+#bp_data = bandwidth_parameters(dic, False)
+#vf_data = vocal_fold(dic)
+#mfcc_data = mfcc(dic)
+#wf_data = wavelet_features(dic, False)
+#tqwt_data = tqwt_features(dic)
 
 
 
+#new_data = data[['id','gender']]
+#new_data = pd.concat([new_data, bf_data, ip_data, ff_data, bp_data, vf_data, mfcc_data, wf_data, tqwt_data], axis=1, sort=False)
 
 
-
-
-
-
-
-
-#########################################
-############  NORMALIZATION  ############
-#########################################
-
-
-#transf = MinMaxScaler(data, copy=True)
-#data = pd.DataFrame(transf.transform(data), columns= data.columns)
-
-
-scaler = MinMaxScaler()
-scaler.fit(data)
-MinMaxScaler(copy=True,feature_range=(0,1))
-norm_data = pd.DataFrame(scaler.transform(data), columns = data.columns)
-#print(norm_data.keys())
-
-
-
-#######################################
-###########  CLASSIFICATION ###########
-#######################################
-
-
-y: np.ndarray = norm_data.pop('class').values
-X: np.ndarray = norm_data.values
-labels = pd.unique(y)
-
-
-trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
-
-
-
-def knn():
-
-	##### BEST N = 5 #######
-
-	nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41]
-	dist = ['manhattan', 'euclidean', 'chebyshev']
-	values = {}
-	for d in dist:
-		yvalues = []
-		for n in nvalues:
-			knn = KNeighborsClassifier(n_neighbors=n, metric=d)
-			knn.fit(trnX, trnY)
-			prdY = knn.predict(tstX)
-			yvalues.append(metrics.accuracy_score(tstY, prdY))
-		values[d] = yvalues
-
-	plt.figure()
-	func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
-	plt.show()
-
-def naive_bayes():
-
-	clf = GaussianNB()
-	clf.fit(trnX, trnY)
-	prdY = clf.predict(tstX)
-	cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
 	
-	estimators = {'GaussianNB': GaussianNB(), 
-			  'MultinomialNB': MultinomialNB(), 
-			  'BernoulyNB': BernoulliNB()}
-
-	xvalues = []
-	yvalues = []
-	for clf in estimators:
-		xvalues.append(clf)
-		estimators[clf].fit(trnX, trnY)
-		prdY = estimators[clf].predict(tstX)
-		yvalues.append(metrics.accuracy_score(tstY, prdY))
-
-	plt.figure()
-	func.bar_chart(plt.gca(), xvalues, yvalues, 'Comparison of Naive Bayes Models', '', 'accuracy', percentage=True)
-	plt.show()
 
 
-
-
-#knn()
-#naive_bayes()
-
-
-
-"""
-
-data = tqwt_energy
-print(data.columns)
-
-y: np.ndarray = data.pop('tqwt_energy_dec_1').values
-X: np.ndarray = data.values
-labels: np.ndarray = pd.unique(y)
-
-trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
-
-
-clf = GaussianNB()
-clf.fit(trnX, trnY)
-prdY = clf.predict(tstX)
-cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
-func.plot_confusion_matrix(plt.gca(), cnf_mtx, labels)
-
-"""
