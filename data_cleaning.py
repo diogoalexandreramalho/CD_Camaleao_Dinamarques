@@ -430,17 +430,16 @@ def vocal_fold(dic, ratio, correlations, pickles, write):
 		if ratio == 0.97:
 			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
 		elif ratio == 0.95:
-			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_95.pkl")
 		elif ratio == 0.9:
-			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_90.pkl")
 		elif ratio == 0.85:
-			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_85.pkl")
 		elif ratio == 0.8:
-			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_80.pkl")
 	
 	else:
 
-		"""
 		# GQ
 		if pickles[0]:
 			gq = get_data_by_expression(vf_data,"^GQ")
@@ -479,25 +478,66 @@ def vocal_fold(dic, ratio, correlations, pickles, write):
 			else:
 				vfer = pd.read_pickle("Pickles/Vocal/VFER_+98.pkl")
 
-		"""
 
-		if correlations:
-			
-			# GQ
-			gq = get_data_by_expression(vf_data,"^GQ")
-			group_correlation(gq)
+		# IMF
+		if pickles[3]:
+			imf = get_data_by_expression(vf_data,"^IMF")
+			if ratio > 0.98:
+				imf.to_pickle("Pickles/Vocal/IMF_+98.pkl")
+			if ratio <= 0.98:
+				imf = delete_columns(imf, ['IMF_NSR_entropy'])
+				imf.to_pickle("Pickles/Vocal/IMF_-98.pkl")
+			if ratio <= 0.8:
+				lst = ['IMF_SNR_entropy', 'IMF_SNR_SEO']
+				imf = add_variable_from_mean(imf, 'IMF_SNR_master', lst, True)
+				imf.to_pickle("Pickles/Vocal/IMF_-80.pkl")
+		else:
+			if ratio > 0.98:
+				imf = pd.read_pickle("Pickles/Vocal/IMF_+98.pkl")
+			if ratio <= 0.98 and ratio > 0.8:
+				imf = pd.read_pickle("Pickles/Vocal/IMF_-98.pkl")
+			if ratio <= 0.8:
+				imf = pd.read_pickle("Pickles/Vocal/IMF_-80.pkl")
 
-			#GNE
-			gne = get_data_by_expression(vf_data,"^GNE")
-			lst = ['GNE_SNR_TKEO', 'GNE_NSR_TKEO']
-			gne = add_variable_from_mean(gne, 'GNE_master', lst, False)
-			group_correlation(gne)
-			
+
+		new_vf_data = pd.concat([gq, gne, vfer, imf], axis=1, sort=False)
+
+		if ratio == 0.97:
+			new_vf_data.to_pickle("Pickles/Vocal/vocal_97.pkl")
+		elif ratio == 0.95:
+			new_vf_data.to_pickle("Pickles/Vocal/vocal_95.pkl")
+		elif ratio == 0.9:
+			new_vf_data.to_pickle("Pickles/Vocal/vocal_90.pkl")
+		elif ratio == 0.85:
+			new_vf_data.to_pickle("Pickles/Vocal/vocal_85.pkl")
+		elif ratio == 0.8:
+			new_vf_data.to_pickle("Pickles/Vocal/vocal_80.pkl")
+
+	if correlations:
+		
+		# GQ
+		gq = get_data_by_expression(vf_data,"^GQ")
+		group_correlation(gq)
+
+		# GNE
+		gne = get_data_by_expression(vf_data,"^GNE")
+		lst = ['GNE_SNR_TKEO', 'GNE_NSR_TKEO']
+		gne = add_variable_from_mean(gne, 'GNE_master', lst, False)
+		group_correlation(gne)
+
+		# VFER
+		vfer = get_data_by_expression(vf_data,"^VFER")
+		group_correlation(vfer)
+
+		# IMF
+		imf = get_data_by_expression(vf_data,"^IMF")
+		lst = ['IMF_SNR_entropy', 'IMF_SNR_SEO']
+		imf = add_variable_from_mean(imf, 'IMF_master', lst, False)
+		group_correlation(imf)
 
 
-	return vf_data
+	return new_vf_data
 
-vf_data = vocal_fold(dic, 0.90, False, [1,0,0,1], True)
 
 
 def wavelet_features(dic, write_pickle):
