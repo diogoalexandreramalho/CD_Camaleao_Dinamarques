@@ -123,6 +123,7 @@ def produce_allvariables(s,n):
 ####### DISTRIBUTIONS ########
 ##############################
 
+dic = general_dic(False)
 
 
 def baseline_features(dic, ratio, correlations, pickles, write):
@@ -180,10 +181,6 @@ def baseline_features(dic, ratio, correlations, pickles, write):
 		pulses = get_data_by_expression(bf_data, "^.*Pulses")
 		del pulses['numPeriodsPulses']
 
-		#group_correlation(shimmer)
-		#group_correlation(jitter)
-		#group_correlation(harmonicity)
-		#group_correlation(pulses)
 
 		new_bf_data = data[['PPE','DFA', 'RPDE']]
 		new_bf_data = pd.concat([new_bf_data, pulses, jitter, shimmer, harmonicity], axis=1, sort=False)
@@ -198,14 +195,26 @@ def baseline_features(dic, ratio, correlations, pickles, write):
 			new_bf_data.to_pickle("Pickles/Baseline/baseline_85.pkl")
 		elif ratio == 0.8:
 			new_bf_data.to_pickle("Pickles/Baseline/baseline_80.pkl")
-	
+		
+		if correlations:
+			new_bf_data = get_data_from_dic(dic,"Baseline Features")
+
+			shimmer = get_data_by_expression(new_bf_data, "Shimmer$")
+			group_correlation(shimmer)
+
+			jitter = get_data_by_expression(new_bf_data, "Jitter$")
+			group_correlation(jitter)
+
+			harmonicity = get_data_by_expression(new_bf_data, "Harmonicity$")
+			group_correlation(harmonicity)
+
+			pulses = get_data_by_expression(new_bf_data, "Pulses$")
+			group_correlation(pulses)
 	
 	return new_bf_data
 
 
-
-
-def bandwidth_parameters(dic, correlation):
+def bandwidth_parameters(dic, correlation, gender_data):
 	bp_data = get_data_from_dic(dic,"Bandwidth Parameters")
 	if correlation:
 		group_correlation(bp_data)
@@ -228,77 +237,267 @@ def intensity_parameters(dic, ratio, correlations, write):
 		elif ratio == 0.9 or ratio == 0.85 or ratio == 0.8:
 			ip_data = pd.read_pickle("Pickles/Intensity/intensity_-91.pkl")
 	else:
-		ip_data = get_data_from_dic(dic,"Intensity Parameters")
+		if not correlations:
+			ip_data = get_data_from_dic(dic,"Intensity Parameters")
 
-		if ratio > 0.91:
-			del ip_data['maxIntensity']
+			if ratio > 0.91:
+				del ip_data['maxIntensity']
+			else:
+				ip_data = delete_columns(ip_data, ['maxIntensity', 'minIntensity'])
+			
+			if ratio == 0.97 or ratio == 0.95:
+				ip_data.to_pickle("Pickles/Intensity/intensity_+91.pkl")
+			elif ratio == 0.9 or ratio == 0.85 or ratio == 0.8:
+				ip_data.to_pickle("Pickles/Intensity/intensity_-91.pkl")
+
 		else:
-			ip_data = delete_columns(ip_data, ['maxIntensity', 'minIntensity'])
-		
-		if ratio == 0.97 or ratio == 0.95:
-			ip_data.to_pickle("Pickles/Intensity/intensity_+91.pkl")
-		elif ratio == 0.9 or ratio == 0.85 or ratio == 0.8:
-			ip_data.to_pickle("Pickles/Intensity/intensity_-91.pkl")
+			ip_data = get_data_from_dic(dic,"Intensity Parameters")
+			group_correlation(ip_data)
 
 	return ip_data
 		
 
 
-def mfcc(dic):
+def mfcc(dic, ratio, correlations, pickles, write):
 	mfcc_data = get_data_from_dic(dic,"MFCC ")
-
-	"""
-	# std
-	std = get_data_by_expression(mfcc_data,"^std_.*")
-	group_correlation(std)
-
-	# mean
-	mean = get_data_by_expression(mfcc_data,"^mean_.*")
-	group_correlation(mean)
 	
-	# mean_MFCC
-	mean_MFCC = get_data_by_expression(mfcc_data,"^mean_MFCC_.*")
-	mean_MFCC = pd.concat([mean_MFCC, mfcc_data['mean_Log_energy']], axis=1, sort=False)
-	mean_MFCC = add_variable_from_mean(mean_MFCC, 'mean_MFCC_master', list(mean_MFCC.columns), False)
-	#group_correlation(mean_MFCC)
-	
-	# mean_deltas, mean_master is equal to 0!!
-	mean_delta = get_data_by_expression(mfcc_data,"^mean_.*delta$")
-	mean_delta = pd.concat([mean_delta, mfcc_data['mean_delta_log_energy'], mfcc_data['mean_delta_delta_log_energy']], axis=1, sort=False)
-	mean_delta = add_variable_from_mean(mean_delta, 'mean_delta_master', list(mean_delta.columns), False)
-	#group_correlation(mean_delta)
-	
-	# std_MFCC
-	std_MFCC = get_data_by_expression(mfcc_data,"^std_MFCC_.*")
-	std_MFCC = pd.concat([std_MFCC, mfcc_data['std_Log_energy']], axis=1, sort=False)
-	std_MFCC = add_variable_from_mean(std_MFCC, 'std_MFCC_master', list(std_MFCC.columns), False)
-	#group_correlation(std_MFCC)
-	
-	# std_deltas
-	std_delta = get_data_by_expression(mfcc_data,"^std_.*delta$")
-	std_delta = pd.concat([std_delta, mfcc_data['std_delta_log_energy'], mfcc_data['std_delta_delta_log_energy']], axis=1, sort=False)
-	std_delta = add_variable_from_mean(std_delta, 'std_delta_master', list(std_delta.columns), False)
-	#group_correlation(std_delta)
-	
-	# std_MFCC and mean_MFCC
-	mean_std_MFCC = pd.concat([mean_MFCC, std_MFCC], axis=1, sort=False)
-	group_correlation(mean_std_MFCC)
-	
-	# std_deltas and mean_deltas
-	mean_std_deltas = pd.concat([mean_delta, std_delta], axis=1, sort=False)
-	group_correlation(mean_std_deltas)
-	"""
+	if not write:
+		if ratio == 0.97:
+			new_mfcc_data = pd.read_pickle("Pickles/MFCC/mfcc_97.pkl")
+		elif ratio == 0.95:
+			new_mfcc_data = pd.read_pickle("Pickles/MFCC/mfcc_95.pkl")
+		elif ratio == 0.9:
+			new_mfcc_data = pd.read_pickle("Pickles/MFCC/mfcc_90.pkl")
+		elif ratio == 0.85:
+			new_mfcc_data = pd.read_pickle("Pickles/MFCC/mfcc_85.pkl")
+		elif ratio == 0.8:
+			new_mfcc_data = pd.read_pickle("Pickles/MFCC/mfcc_80.pkl")
+	else:
+		
+		# mean_coef
+		if pickles[0]:
+			mean_coef = get_data_by_expression(mfcc_data,"^mean_MFCC_.*")
+			mean_coef = pd.concat([mfcc_data['mean_Log_energy'], mean_coef], axis=1, sort=False)
+			mean_coef.to_pickle("Pickles/MFCC/mean_coef.pkl")
+		else:
+			mean_coef = pd.read_pickle("Pickles/MFCC/mean_coef.pkl")
+		
 
-	return mfcc_data
+		# mean_deltas
+		if ratio <= 0.86:
+			if pickles[1]:
+				mean_delta = get_data_by_expression(mfcc_data,"^mean_(...|....)_delta$")
+				mean_delta_delta = get_data_by_expression(mfcc_data,"^mean_(...|....)_delta_delta$")
+				mean_deltas = pd.concat([mfcc_data['mean_delta_log_energy'], mean_delta, mfcc_data['mean_delta_delta_log_energy'], mean_delta_delta], axis=1, sort=False)
+				lst = ['mean_delta_log_energy', 'mean_0th_delta']
+				mean_deltas = add_variable_from_mean(mean_deltas, 'mean_delta_master', lst, True)
+				mean_deltas.to_pickle("Pickles/MFCC/mean_deltas_-86.pkl")
+			else:
+				mean_deltas = pd.read_pickle("Pickles/MFCC/mean_deltas_-86.pkl")
+		else:
+			if pickles[1]:
+				mean_delta = get_data_by_expression(mfcc_data,"^mean_(...|....)_delta$")
+				mean_delta_delta = get_data_by_expression(mfcc_data,"^mean_(...|....)_delta_delta$")
+				mean_deltas = pd.concat([mfcc_data['mean_delta_log_energy'], mean_delta, mfcc_data['mean_delta_delta_log_energy'], mean_delta_delta], axis=1, sort=False)
+				mean_deltas.to_pickle("Pickles/MFCC/mean_deltas_+86.pkl")
+			else:
+				mean_deltas = pd.read_pickle("Pickles/MFCC/mean_deltas_+86.pkl")
+
+		
+		# std_coef
+		if pickles[2]:
+			std_coef = get_data_by_expression(mfcc_data,"^std_MFCC_.*")
+			std_coef = pd.concat([mfcc_data['std_Log_energy'], std_coef], axis=1, sort=False)
+			if ratio <= 0.88:
+				lst = ['std_Log_energy', 'std_MFCC_0th_coef']
+				std_coef = add_variable_from_mean(std_coef, 'std_MFCC_master', lst, True)
+				std_coef.to_pickle("Pickles/MFCC/std_coef_-88.pkl")
+			else:
+				std_coef.to_pickle("Pickles/MFCC/std_coef_+88.pkl")
+		else:
+			if ratio <= 0.88:
+				std_coef = pd.read_pickle("Pickles/MFCC/std_coef_-88.pkl")
+			else:
+				std_coef = pd.read_pickle("Pickles/MFCC/std_coef_+88.pkl")
+		
+			
+		# std_deltas
+		if pickles[3]:
+			std_delta = get_data_by_expression(mfcc_data,"^std_(...|....)_delta$")
+			std_deltas = pd.concat([mfcc_data['std_delta_log_energy'], std_delta, mfcc_data['std_delta_delta_log_energy']], axis=1, sort=False)
+			
+			if ratio > 0.95:
+				std_delta_delta = get_data_by_expression(mfcc_data,"^std_(...|....)_delta_delta$")
+				std_deltas = pd.concat([std_deltas, std_delta_delta], axis=1, sort=False)
+				std_deltas.to_pickle("Pickles/MFCC/std_deltas_+95.pkl")
+			if ratio <= 0.95:
+				lst = ['std_6th_delta_delta', 'std_8th_delta_delta', 'std_11th_delta_delta']
+				std_deltas = pd.concat([std_deltas, mfcc_data[lst]], axis=1, sort=False)
+				std_deltas.to_pickle("Pickles/MFCC/std_deltas_=95.pkl")
+			if ratio <= 0.94:
+				lst = ['std_6th_delta_delta', 'std_8th_delta_delta']
+				std_deltas = delete_columns(std_deltas, lst)
+				std_deltas.to_pickle("Pickles/MFCC/std_deltas_=94.pkl")
+			if ratio <= 0.93:
+				lst = ['std_11th_delta_delta']
+				std_deltas = delete_columns(std_deltas, lst)
+				std_deltas.to_pickle("Pickles/MFCC/std_deltas_=93.pkl")
+			if ratio <= 0.92:
+				lst = ['std_delta_delta_log_energy']
+				std_deltas = delete_columns(std_deltas, lst)
+				std_deltas.to_pickle("Pickles/MFCC/std_deltas_-92.pkl")
+	
+		else:
+			if ratio > 0.95:
+				std_deltas = pd.read_pickle("Pickles/MFCC/std_deltas_+95.pkl")
+			if ratio == 0.95:
+				std_deltas = pd.read_pickle("Pickles/MFCC/std_deltas_=95.pkl")
+			if ratio == 0.94:
+				std_deltas = pd.read_pickle("Pickles/MFCC/std_deltas_=94.pkl")
+			if ratio == 0.93:
+				std_deltas = pd.read_pickle("Pickles/MFCC/std_deltas_=93.pkl")
+			if ratio <= 0.92:
+				std_deltas = pd.read_pickle("Pickles/MFCC/std_deltas_-92.pkl")
+		
+
+	new_mfcc_data = pd.concat([mean_coef, mean_deltas, std_coef, std_deltas], axis=1, sort=False)
+
+	if ratio == 0.97:
+		new_mfcc_data.to_pickle("Pickles/MFCC/mfcc_97.pkl")
+	elif ratio == 0.95:
+		new_mfcc_data.to_pickle("Pickles/MFCC/mfcc_95.pkl")
+	elif ratio == 0.9:
+		new_mfcc_data.to_pickle("Pickles/MFCC/mfcc_90.pkl")
+	elif ratio == 0.85:
+		new_mfcc_data.to_pickle("Pickles/MFCC/mfcc_85.pkl")
+	elif ratio == 0.8:
+		new_mfcc_data.to_pickle("Pickles/MFCC/mfcc_80.pkl")
+
+		
+	if correlations:
+		
+		# std
+		std = get_data_by_expression(mfcc_data,"^std_.*")
+		group_correlation(std)
+
+		# mean
+		mean = get_data_by_expression(mfcc_data,"^mean_.*")
+		group_correlation(mean)
+		
+		# mean_MFCC
+		mean_MFCC = get_data_by_expression(mfcc_data,"^mean_MFCC_.*")
+		mean_MFCC = pd.concat([mean_MFCC, mfcc_data['mean_Log_energy']], axis=1, sort=False)
+		mean_MFCC = add_variable_from_mean(mean_MFCC, 'mean_MFCC_master', list(mean_MFCC.columns), False)
+		group_correlation(mean_MFCC)
+		
+		# mean_deltas
+		mean_delta = get_data_by_expression(mfcc_data,"^mean_.*delta$")
+		mean_delta = pd.concat([mean_delta, mfcc_data['mean_delta_log_energy'], mfcc_data['mean_delta_delta_log_energy']], axis=1, sort=False)
+		lst = ['mean_delta_log_energy', 'mean_0th_delta']
+		mean_delta = add_variable_from_mean(mean_delta, 'mean_delta_master', lst, False)
+		group_correlation(mean_delta)
+		
+		# std_MFCC
+		std_MFCC = get_data_by_expression(mfcc_data,"^std_MFCC_.*")
+		std_MFCC = pd.concat([std_MFCC, mfcc_data['std_Log_energy']], axis=1, sort=False)
+		lst = ['std_Log_energy', 'std_MFCC_0th_coef']
+		std_MFCC = add_variable_from_mean(std_MFCC, 'std_MFCC_master', lst, False)
+		group_correlation(std_MFCC)
+		
+		# std_deltas
+		std_delta = get_data_by_expression(mfcc_data,"^std_.*delta$")
+		std_delta = pd.concat([std_delta, mfcc_data['std_delta_log_energy'], mfcc_data['std_delta_delta_log_energy']], axis=1, sort=False)
+		std_delta = add_variable_from_mean(std_delta, 'std_delta_master', list(std_delta.columns), False)
+		group_correlation(std_delta)
+		
+		# std_MFCC and mean_MFCC
+		mean_std_MFCC = pd.concat([mean_MFCC, std_MFCC], axis=1, sort=False)
+		group_correlation(mean_std_MFCC)
+		
+		# std_deltas and mean_deltas
+		mean_std_deltas = pd.concat([mean_delta, std_delta], axis=1, sort=False)
+		group_correlation(mean_std_deltas)
+		
+
+	return new_mfcc_data
 
 
 
-
-def vocal_fold(dic):
+def vocal_fold(dic, ratio, correlations, pickles, write):
 	vf_data = get_data_from_dic(dic,"Vocal Fold")
+
+	if not write:
+		if ratio == 0.97:
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+		elif ratio == 0.95:
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+		elif ratio == 0.9:
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+		elif ratio == 0.85:
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+		elif ratio == 0.8:
+			new_vf_data = pd.read_pickle("Pickles/Vocal/vocal_97.pkl")
+	
+	else:
+
+		"""
+		# GQ
+		if pickles[0]:
+			gq = get_data_by_expression(vf_data,"^GQ")
+			gq.to_pickle("Pickles/Vocal/GQ.pkl")
+		else:
+			gq = pd.read_pickle("Pickles/Vocal/GQ.pkl")
+		
+		
+		# GNE
+		if pickles[1]:
+			gne = get_data_by_expression(vf_data,"^GNE")
+			if ratio <= 0.91:
+				lst = ['GNE_SNR_TKEO', 'GNE_NSR_TKEO']
+				gne = add_variable_from_mean(gne, 'GNE_master', lst, True)
+				gne.to_pickle("Pickles/Vocal/GNE_-91.pkl")
+			else:
+				gne.to_pickle("Pickles/Vocal/GNE_+91.pkl")
+		else:
+			if ratio <= 0.91:
+				gne = pd.read_pickle("Pickles/Vocal/GNE_-91.pkl")
+			else:
+				gne = pd.read_pickle("Pickles/Vocal/GNE_+91.pkl")
+		
+
+		# VFER
+		if pickles[2]:
+			vfer = get_data_by_expression(vf_data,"^VFER")
+			if ratio <= 0.98:
+				vfer = delete_columns(vfer, ['VFER_entropy'])
+				vfer.to_pickle("Pickles/Vocal/VFER_-98.pkl")
+			else:
+				vfer.to_pickle("Pickles/Vocal/VFER_+98.pkl")
+		else:
+			if ratio <= 0.98:
+				vfer = pd.read_pickle("Pickles/Vocal/VFER_-98.pkl")
+			else:
+				vfer = pd.read_pickle("Pickles/Vocal/VFER_+98.pkl")
+
+		"""
+
+		if correlations:
+			
+			# GQ
+			gq = get_data_by_expression(vf_data,"^GQ")
+			group_correlation(gq)
+
+			#GNE
+			gne = get_data_by_expression(vf_data,"^GNE")
+			lst = ['GNE_SNR_TKEO', 'GNE_NSR_TKEO']
+			gne = add_variable_from_mean(gne, 'GNE_master', lst, False)
+			group_correlation(gne)
+			
+
+
 	return vf_data
 
-
+vf_data = vocal_fold(dic, 0.90, False, [1,0,0,1], True)
 
 
 def wavelet_features(dic, write_pickle):
