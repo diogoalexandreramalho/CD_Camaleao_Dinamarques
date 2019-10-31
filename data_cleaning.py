@@ -540,44 +540,550 @@ def vocal_fold(dic, ratio, correlations, pickles, write):
 
 
 
-def wavelet_features(dic, write_pickle):
+def wavelet_features(dic, ratio, correlations, pickles, write):
 	wf_data = get_data_from_dic(dic,"Wavelet Features")
-	dic_by_len = group_dic(wf_data, 13, False)
 	
-	###### det_entropy ######
-	"""
-	det_entropy_data = wf_data[dic_by_len['det_entropy_s']]
-
-	det_entropy_1_to_3_lst = ['det_entropy_shannon_1_coef', 'det_entropy_shannon_2_coef', 'det_entropy_shannon_3_coef']
-	det_entropy_data = add_variable_from_mean(det_entropy_data, 'det_entropy_1_to_3', det_entropy_1_to_3_lst, 1)
-
-	det_entropy_8_and_10_lst = ['det_entropy_shannon_8_coef', 'det_entropy_shannon_10_coef']
-	det_entropy_data = add_variable_from_mean(det_entropy_data, 'det_entropy_8_and_10', det_entropy_8_and_10_lst, 1)
-	
-	group_correlation(det_entropy_data)
-	"""
-
-
-	###### det_TKEO_mean ######
-	"""
-	if write_pickle:
-		det_TKEO_m_data = wf_data[dic_by_len['det_TKEO_mean']]
-		det_TKEO_m_1_to_3_lst = ['det_TKEO_mean_1_coef', 'det_TKEO_mean_2_coef', 'det_TKEO_mean_3_coef']
-		det_TKEO_m_data = add_variable_from_mean(det_TKEO_m_data, 'det_TKEO_m_1_to_3', det_TKEO_m_1_to_3_lst, 1)
-
-		det_TKEO_m_8_to_10_lst = ['det_TKEO_mean_8_coef', 'det_TKEO_mean_9_coef', 'det_TKEO_mean_10_coef']
-		det_TKEO_m_data = add_variable_from_mean(det_TKEO_m_data, 'det_TKEO_m_8_to_10', det_TKEO_m_8_to_10_lst, 1)
-
-		det_TKEO_m_6_and_7_lst = ['det_TKEO_mean_6_coef', 'det_TKEO_mean_7_coef']
-		det_TKEO_m_data = add_variable_from_mean(det_TKEO_m_data, 'det_TKEO_m_6_and_7', det_TKEO_m_6_and_7_lst, 1)
-
-		det_TKEO_m_data.to_pickle("det_TKEO_m_data.pkl")
-
-		#group_correlation(det_TKEO_m_data)
+	if not write:
+		if ratio == 0.97:
+			new_wf_data = pd.read_pickle("Pickles/Wavelet/wavelet_97.pkl")
+		elif ratio == 0.95:
+			new_wf_data = pd.read_pickle("Pickles/Wavelet/wavelet_95.pkl")
+		elif ratio == 0.9:
+			new_wf_data = pd.read_pickle("Pickles/Wavelet/wavelet_90.pkl")
+		elif ratio == 0.85:
+			new_wf_data = pd.read_pickle("Pickles/Wavelet/wavelet_85.pkl")
+		elif ratio == 0.8:
+			new_wf_data = pd.read_pickle("Pickles/Wavelet/wavelet_80.pkl")
 	else:
-		det_TKEO_m_data = pd.read_pickle("det_TKEO_m_data.pkl")
-	"""
-	return wf_data
+
+		
+		#Ea
+		if pickles[0]:
+			ea = get_data_by_expression(wf_data,"^Ea")
+			if ratio <= 0.82:
+				ea = delete_columns(ea, ['Ea2'])
+				ea.to_pickle("Pickles/Wavelet/Ea/ea_-82.pkl")
+			else:
+				ea.to_pickle("Pickles/Wavelet/Ea/ea_+82.pkl")
+		else:
+			if ratio <= 0.82:
+				ea = pd.read_pickle("Pickles/Wavelet/Ea/ea_-82.pkl")
+			else:
+				ea = pd.read_pickle("Pickles/Wavelet/Ea/ea_+82.pkl")
+		
+
+		#Ed
+		if pickles[1]:
+			ed = get_data_by_expression(wf_data,"^Ed")
+			if ratio > 0.95:
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_+95.pkl")
+			if ratio <= 0.95:
+				ed = delete_columns(ed, ['Ed2_1_coef', 'Ed2_2_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-95.pkl")
+			if ratio <= 0.93:
+				ed = delete_columns(ed, ['Ed2_3_coef', 'Ed2_5_coef', 'Ed_1_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-93.pkl")
+			if ratio <= 0.89:
+				ed = delete_columns(ed, ['Ed_3_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-89.pkl")
+			if ratio <= 0.87:
+				ed = delete_columns(ed, ['Ed2_9_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-87.pkl")
+			if ratio <= 0.86:
+				ed = delete_columns(ed, ['Ed_5_coef', 'Ed2_4_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-86.pkl")
+			if ratio <= 0.85:
+				ed = delete_columns(ed, ['Ed_8_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-85.pkl")
+			if ratio <= 0.84:
+				ed = delete_columns(ed, ['Ed_9_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-84.pkl")
+			if ratio <= 0.82:
+				ed = delete_columns(ed, ['Ed_10_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-82.pkl")
+			if ratio <= 0.81:
+				ed = delete_columns(ed, ['Ed_6_coef'])
+				ed.to_pickle("Pickles/Wavelet/Ed/ed_-81.pkl")
+		else:
+			if ratio > 0.95:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_+95.pkl")
+			elif ratio in [0.94,0.95]:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-95.pkl")
+			elif ratio > 0.89 and ratio <= 0.93:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-93.pkl")
+			elif ratio in [0.88,0.89]:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-89.pkl")
+			elif ratio == 0.87:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-87.pkl")
+			elif ratio == 0.86:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-86.pkl")
+			elif ratio == 0.85:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-85.pkl")
+			elif ratio in [0.84, 0.83]:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-84.pkl")
+			elif ratio == 0.82:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-82.pkl")
+			elif ratio <= 0.81:
+				ed = pd.read_pickle("Pickles/Wavelet/Ed/ed_-81.pkl")
+
+
+		# det_entropy_shannon
+		if pickles[2]:
+			det_entropy_shannon = get_data_by_expression(wf_data,"^det_entropy_shannon")
+			if ratio > 0.91:
+				det_entropy_shannon.to_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_+91.pkl")
+			if ratio <= 0.91:
+				det_entropy_shannon = delete_columns(det_entropy_shannon, ['det_entropy_shannon_2_coef'])
+				det_entropy_shannon.to_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_-91.pkl")
+			if ratio <= 0.86:
+				det_entropy_shannon = delete_columns(det_entropy_shannon, ['det_entropy_shannon_10_coef'])
+				det_entropy_shannon.to_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_-86.pkl")
+		else:
+			if ratio > 0.91:
+				det_entropy_shannon = pd.read_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_+91.pkl")
+			elif ratio <= 0.91 and ratio > 0.86:
+				det_entropy_shannon = pd.read_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_-91.pkl")
+			elif ratio <= 0.86:
+				det_entropy_shannon = pd.read_pickle("Pickles/Wavelet/det_entropy/shannon/det_entropy_shannon_-86.pkl")
+			
+
+		# det_entropy_log
+		if pickles[3]:
+			det_entropy_log = get_data_by_expression(wf_data,"^det_entropy_log")
+			if ratio > 0.96:
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_+96.pkl")
+			if ratio <= 0.96:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_9_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-96.pkl")
+			if ratio <= 0.94:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_2_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-94.pkl")
+			if ratio <= 0.93:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_7_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-93.pkl")
+			if ratio <= 0.91:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_5_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-91.pkl")
+			if ratio <= 0.86:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_4_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-86.pkl")
+			if ratio <= 0.85:
+				det_entropy_log = delete_columns(det_entropy_log, ['det_entropy_log_8_coef'])
+				det_entropy_log.to_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-85.pkl")
+		else:
+			if ratio > 0.96:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_+96.pkl")
+			elif ratio in [0.95,0.96]:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-96.pkl")
+			elif ratio == 0.94:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-94.pkl")
+			elif ratio in [0.92,0.93]:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-93.pkl")
+			elif ratio <= 0.91 and ratio > 0.86:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-91.pkl")
+			elif ratio == 0.86:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-86.pkl")
+			elif ratio <= 0.85:
+				det_entropy_log = pd.read_pickle("Pickles/Wavelet/det_entropy/log/det_entropy_log_-85.pkl")
+
+
+		# det_TKEO
+		if pickles[4]:
+			det_TKEO = get_data_by_expression(wf_data,"^det_TKEO")
+			det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_7_coef', 'det_TKEO_std_8_coef', 'det_TKEO_std_10_coef'])
+			if ratio > 0.98:
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_+98.pkl")
+			if ratio <= 0.98:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_9_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-98.pkl")
+			if ratio <= 0.97:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_2_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-97.pkl")
+			if ratio <= 0.96:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_4_coef', 'det_TKEO_std_5_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-96.pkl")
+			if ratio <= 0.94:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_1_coef', 'det_TKEO_std_6_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-94.pkl")
+			if ratio <= 0.92:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_mean_2_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-92.pkl")
+			if ratio <= 0.91:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_std_3_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-91.pkl")
+			if ratio <= 0.83:
+				det_TKEO = delete_columns(det_TKEO, ['det_TKEO_mean_10_coef'])
+				det_TKEO.to_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-83.pkl")
+		else:
+			if ratio > 0.98:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_+98.pkl")
+			elif ratio == 0.98:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-98.pkl")
+			elif ratio == 0.97:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-97.pkl")
+			elif ratio in [0.95,0.96]:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-96.pkl")
+			elif ratio in [0.93,0.94]:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-94.pkl")
+			elif ratio == 0.92:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-92.pkl")
+			elif ratio <= 0.91 and ratio > 0.83:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-91.pkl")
+			elif ratio <= 0.83:
+				det_TKEO = pd.read_pickle("Pickles/Wavelet/det_TKEO/det_TKEO_-83.pkl")
+
+
+		# app_entropy_shannon
+		if pickles[5]:
+			app_entropy_shannon = get_data_by_expression(wf_data,"^app_entropy_shannon_4_coef")
+			app_entropy_shannon.to_pickle("Pickles/Wavelet/app_entropy/app_entropy_shannon.pkl")
+		else:
+			app_entropy_shannon = pd.read_pickle("Pickles/Wavelet/app_entropy/app_entropy_shannon.pkl")
+
+
+		# app_entropy_log
+		if pickles[6]:
+			app_entropy_log_1 = get_data_by_expression(wf_data,"^app_entropy_log_3_coef")
+			app_entropy_log_2 = get_data_by_expression(wf_data,"^app_entropy_log_7_coef")
+			app_entropy_log = pd.concat([app_entropy_log_1, app_entropy_log_2], axis=1, sort=False)
+			if ratio > 0.88:
+				app_entropy_log.to_pickle("Pickles/Wavelet/app_entropy/app_entropy_log_+88.pkl")
+			else:
+				app_entropy_log = delete_columns(app_entropy_log, ['app_entropy_log_3_coef'])
+				app_entropy_log.to_pickle("Pickles/Wavelet/app_entropy/app_entropy_log_-88.pkl")
+		else:
+			if ratio > 0.88:
+				app_entropy_log = pd.read_pickle("Pickles/Wavelet/app_entropy/app_entropy_log_+88.pkl")
+			else:
+				app_entropy_log = pd.read_pickle("Pickles/Wavelet/app_entropy/app_entropy_log_-88.pkl")
+
+
+		# app_det_TKEO
+		if pickles[7]:
+			app_det_TKEO_1 = get_data_by_expression(wf_data,"^app_det_TKEO_mean_1_coef")
+			app_det_TKEO_2 = get_data_by_expression(wf_data,"^app_det_TKEO_mean_2_coef")
+			app_det_TKEO_3 = get_data_by_expression(wf_data,"^app_det_TKEO_mean_3_coef")
+			app_det_TKEO_6 = get_data_by_expression(wf_data,"^app_det_TKEO_mean_6_coef")
+			app_det_TKEO = pd.concat([app_det_TKEO_1, app_det_TKEO_2, app_det_TKEO_3, app_det_TKEO_6], axis=1, sort=False)
+
+			if ratio > 0.96:
+				app_det_TKEO.to_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_+96.pkl")
+			if ratio <= 0.96:
+				app_det_TKEO = delete_columns(app_det_TKEO, ['app_det_TKEO_mean_3_coef'])
+				app_det_TKEO.to_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_-96.pkl")
+			if ratio <= 0.92:
+				app_det_TKEO = delete_columns(app_det_TKEO, ['app_det_TKEO_mean_2_coef'])
+				app_det_TKEO.to_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_-92.pkl")
+		else:
+			if ratio > 0.96:
+				app_det_TKEO = pd.read_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_+96.pkl")
+			elif ratio <= 0.96 and ratio > 0.92:
+				app_det_TKEO = pd.read_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_-96.pkl")
+			elif ratio <= 0.92:
+				app_det_TKEO = pd.read_pickle("Pickles/Wavelet/app_det_TKEO/app_det_TKEO_-92.pkl")
+
+
+		# app_TKEO_std
+		if pickles[8]:
+			app_TKEO_std_1 = get_data_by_expression(wf_data,"^app_TKEO_std_1_coef")
+			app_TKEO_std_2 = get_data_by_expression(wf_data,"^app_TKEO_std_2_coef")
+			app_TKEO_std_3 = get_data_by_expression(wf_data,"^app_TKEO_std_3_coef")
+			app_TKEO_std_6 = get_data_by_expression(wf_data,"^app_TKEO_std_6_coef")
+			app_TKEO_std = pd.concat([app_TKEO_std_1, app_TKEO_std_2, app_TKEO_std_3, app_TKEO_std_6], axis=1, sort=False)
+
+			if ratio > 0.97:
+				app_TKEO_std.to_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_+97.pkl")
+			if ratio <= 0.97:
+				app_TKEO_std = delete_columns(app_TKEO_std, ['app_TKEO_std_3_coef'])
+				app_TKEO_std.to_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_-97.pkl")
+			if ratio <= 0.94:
+				app_TKEO_std = delete_columns(app_TKEO_std, ['app_TKEO_std_2_coef'])
+				app_TKEO_std.to_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_-94.pkl")
+		else:
+			if ratio > 0.97:
+				app_TKEO_std = pd.read_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_+97.pkl")
+			elif ratio <= 0.97 and ratio > 0.94:
+				app_TKEO_std = pd.read_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_-97.pkl")
+			elif ratio <= 0.94:
+				app_TKEO_std = pd.read_pickle("Pickles/Wavelet/app_TKEO_std/app_TKEO_std_-94.pkl")
+		
+
+		# det_LT_entropy_shannon
+		if pickles[9]:
+			det_LT_entropy_shannon = get_data_by_expression(wf_data,"^det_LT_entropy_shannon")
+			det_LT_entropy_shannon.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_shannon.pkl")
+		else:
+			det_LT_entropy_shannon = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_shannon.pkl")
+
+
+		# det_LT_entropy_log
+		if pickles[10]:
+			det_LT_entropy_log = get_data_by_expression(wf_data,"^det_LT_entropy_log")
+
+			if ratio > 0.96:
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_+96.pkl")
+			if ratio <= 0.96:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_9_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-96.pkl")
+			if ratio <= 0.94:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_2_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-94.pkl")
+			if ratio <= 0.93:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_7_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-93.pkl")
+			if ratio <= 0.91:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_5_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-91.pkl")
+			if ratio <= 0.87:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_4_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-87.pkl")
+			if ratio <= 0.85:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_8_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-85.pkl")
+			if ratio <= 0.8:
+				det_LT_entropy_log = delete_columns(det_LT_entropy_log, ['det_LT_entropy_log_3_coef'])
+				det_LT_entropy_log.to_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-80.pkl")
+			
+		else:
+			if ratio > 0.96:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_+96.pkl")
+			if ratio in [0.95,0.96]:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-96.pkl")
+			if ratio == 0.94:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-94.pkl")
+			if ratio in [0.93,0.92]:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-93.pkl")
+			if ratio <= 0.91 and ratio > 0.87:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-91.pkl")
+			if ratio in [0.86,0.87]:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-87.pkl")
+			if ratio <= 0.85 and ratio > 0.8:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-85.pkl")
+			if ratio <= 0.8:
+				det_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/det_LT_entropy/det_LT_entropy_log_-80.pkl")
+
+		
+		# det_LT_TKEO
+		if pickles[11]:
+			det_LT_TKEO = get_data_by_expression(wf_data,"^det_LT_TKEO")
+			det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_std_7_coef', 'det_LT_TKEO_std_8_coef', 'det_LT_TKEO_std_9_coef', 'det_LT_TKEO_std_10_coef'])
+			
+			if ratio > 0.97:
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_+97.pkl")
+			if ratio <= 0.97:
+				det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_std_2_coef'])
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-97.pkl")
+			if ratio <= 0.95:
+				det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_std_5_coef', 'det_LT_TKEO_std_6_coef'])
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-95.pkl")
+			if ratio <= 0.94:
+				det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_std_1_coef', 'det_LT_TKEO_std_4_coef'])
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-94.pkl")
+			if ratio <= 0.91:
+				det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_std_3_coef'])
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-91.pkl")
+			if ratio <= 0.9:
+				det_LT_TKEO = delete_columns(det_LT_TKEO, ['det_LT_TKEO_mean_2_coef'])
+				det_LT_TKEO.to_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-90.pkl")
+		else:
+			if ratio > 0.97:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_+97.pkl")
+			elif ratio in [0.96,0.97]:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-97.pkl")
+			elif ratio == 0.95:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-95.pkl")
+			elif ratio <= 0.94 and ratio > 0.91:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-94.pkl")
+			elif ratio == 0.91:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-91.pkl")
+			elif ratio <= 0.9:
+				det_LT_TKEO = pd.read_pickle("Pickles/Wavelet/det_LT_TKEO/det_LT_TKEO_-90.pkl")
+
+
+		# app_LT_entropy_shannon
+		if pickles[12]:
+			app_LT_entropy_shannon_3 = get_data_by_expression(wf_data,"^app_LT_entropy_shannon_3_coef")
+			app_LT_entropy_shannon_6 = get_data_by_expression(wf_data,"^app_LT_entropy_shannon_6_coef")
+			app_LT_entropy_shannon = pd.concat([app_LT_entropy_shannon_3, app_LT_entropy_shannon_6], axis=1, sort=False)
+			app_LT_entropy_shannon.to_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_shannon.pkl")
+		else:
+			app_LT_entropy_shannon = pd.read_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_shannon.pkl")
+
+
+		# app_LT_entropy_log
+		if pickles[13]:
+			app_LT_entropy_log_1 = get_data_by_expression(wf_data,"^app_LT_entropy_log_1_coef")
+			app_LT_entropy_log_6 = get_data_by_expression(wf_data,"^app_LT_entropy_log_6_coef")
+			app_LT_entropy_log_10 = get_data_by_expression(wf_data,"^app_LT_entropy_log_10_coef")
+			app_LT_entropy_log = pd.concat([app_LT_entropy_log_1, app_LT_entropy_log_6, app_LT_entropy_log_10], axis=1, sort=False)
+
+			if ratio > 0.88:
+				app_LT_entropy_log.to_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_log_+88.pkl")
+			else:
+				app_LT_entropy_log = delete_columns(app_LT_entropy_log, ['app_LT_entropy_log_6_coef'])
+				app_LT_entropy_log.to_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_log_-88.pkl")
+		else:
+			if ratio > 0.88:
+				app_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_log_+88.pkl")
+			else:
+				app_LT_entropy_log = pd.read_pickle("Pickles/Wavelet/app_LT_entropy/app_LT_entropy_log_-88.pkl")
+		
+
+		# app_LT_TKEO
+		if pickles[14]:
+			app_LT_TKEO_1 = get_data_by_expression(wf_data,"^app_LT_TKEO_mean_1_coef")
+			app_LT_TKEO_3 = get_data_by_expression(wf_data,"^app_LT_TKEO_mean_3_coef")
+			app_LT_TKEO_5 = get_data_by_expression(wf_data,"^app_LT_TKEO_mean_6_coef")
+			app_LT_TKEO_6 = get_data_by_expression(wf_data,"^app_LT_TKEO_std_1_coef")
+			app_LT_TKEO_8 = get_data_by_expression(wf_data,"^app_LT_TKEO_std_3_coef")
+			app_LT_TKEO = pd.concat([app_LT_TKEO_1, app_LT_TKEO_3, app_LT_TKEO_5, app_LT_TKEO_6, app_LT_TKEO_8], axis=1, sort=False)
+			
+			if ratio > 0.97:
+				app_LT_TKEO.to_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_+97.pkl")
+			if ratio <= 0.97:
+				app_LT_TKEO = delete_columns(app_LT_TKEO, ['app_LT_TKEO_std_3_coef'])
+				app_LT_TKEO.to_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-97.pkl")
+			if ratio <= 0.93:
+				app_LT_TKEO = delete_columns(app_LT_TKEO, ['app_LT_TKEO_mean_3_coef'])
+				app_LT_TKEO.to_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-93.pkl")
+			if ratio <= 0.88:
+				app_LT_TKEO = delete_columns(app_LT_TKEO, ['app_LT_TKEO_std_1_coef'])
+				app_LT_TKEO.to_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-88.pkl")
+		else:
+			if ratio > 0.97:
+				app_LT_TKEO = pd.read_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_+97.pkl")
+			elif ratio <= 0.97 and ratio > 0.93:
+				app_LT_TKEO = pd.read_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-97.pkl")
+			elif ratio <= 0.93 and ratio > 0.88:
+				app_LT_TKEO = pd.read_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-93.pkl")
+			elif ratio <= 0.88:
+				app_LT_TKEO = pd.read_pickle("Pickles/Wavelet/app_LT_TKEO/app_LT_TKEO_-88.pkl")
+
+
+		new_wf_data = pd.concat([ea, ed, det_entropy_shannon, det_entropy_log, det_TKEO, app_entropy_shannon, app_entropy_log, app_det_TKEO, app_TKEO_std, det_LT_entropy_shannon, det_LT_entropy_log, det_LT_TKEO, app_LT_entropy_shannon, app_LT_entropy_log, app_LT_TKEO], axis=1, sort=False)
+
+		if ratio == 0.97:
+			new_wf_data.to_pickle("Pickles/Wavelet/wavelet_97.pkl")
+		elif ratio == 0.95:
+			new_wf_data.to_pickle("Pickles/Wavelet/wavelet_95.pkl")
+		elif ratio == 0.9:
+			new_wf_data.to_pickle("Pickles/Wavelet/wavelet_90.pkl")
+		elif ratio == 0.85:
+			new_wf_data.to_pickle("Pickles/Wavelet/wavelet_85.pkl")
+		elif ratio == 0.8:
+			new_wf_data.to_pickle("Pickles/Wavelet/wavelet_80.pkl")
+
+
+
+	if correlations:
+		
+		# Ea
+		ea = get_data_by_expression(wf_data,"^Ea")
+		group_correlation(ea)
+
+		# Ed
+		ed = get_data_by_expression(wf_data,"^Ed")
+		ed = add_variable_from_mean(ed, 'ed_master', list(ed.columns), False)
+		group_correlation(ed)
+
+		# det_entropy
+		det_entropy = get_data_by_expression(wf_data,"^det_entropy")
+		group_correlation(det_entropy)
+
+		# det_entropy_shannon 
+		det_entropy_shannon = get_data_by_expression(wf_data,"^det_entropy_shannon")
+		group_correlation(det_entropy_shannon)
+
+		# det_entropy_log
+		det_entropy_log = get_data_by_expression(wf_data,"^det_entropy_log")
+		group_correlation(det_entropy_log)
+
+		# det_TKEO
+		det_TKEO = get_data_by_expression(wf_data,"^det_TKEO")
+		group_correlation(det_TKEO)
+
+		# det_TKEO_mean
+		det_TKEO_mean = get_data_by_expression(wf_data,"^det_TKEO_mean")
+		group_correlation(det_TKEO_mean)
+
+		# det_TKEO_std
+		det_TKEO_std = get_data_by_expression(wf_data,"^det_TKEO_std")
+		group_correlation(det_TKEO_std)
+
+		# app_entropy
+		app_entropy = get_data_by_expression(wf_data,"^app_entropy")
+		group_correlation(app_entropy)
+
+		# app_entropy_shannon
+		app_entropy_shannon = get_data_by_expression(wf_data,"^app_entropy_shannon")
+		group_correlation(app_entropy_shannon)
+
+		# app_entropy_log
+		app_entropy_log = get_data_by_expression(wf_data,"^app_entropy_log")
+		group_correlation(app_entropy_log)
+
+		# app_det_TKEO
+		app_det_TKEO = get_data_by_expression(wf_data,"^app_det_TKEO")
+		group_correlation(app_det_TKEO)
+
+		# app_TKEO
+		app_TKEO = get_data_by_expression(wf_data,"^app_TKEO")
+		group_correlation(app_TKEO)
+
+		# det_LT_entropy
+		det_LT_entropy = get_data_by_expression(wf_data,"^det_LT_entropy")
+		group_correlation(det_LT_entropy)
+
+		# det_LT_entropy_shannon
+		det_LT_entropy_shannon = get_data_by_expression(wf_data,"^det_LT_entropy_shannon")
+		group_correlation(det_LT_entropy_shannon)
+
+		# det_LT_entropy_log
+		det_LT_entropy_log = get_data_by_expression(wf_data,"^det_LT_entropy_log")
+		group_correlation(det_LT_entropy_log)
+
+		# det_LT_TKEO
+		det_LT_TKEO = get_data_by_expression(wf_data,"^det_LT_TKEO")
+		group_correlation(det_LT_TKEO)
+
+		# det_LT_TKEO_mean
+		det_LT_TKEO_mean = get_data_by_expression(wf_data,"^det_LT_TKEO_mean")
+		group_correlation(det_LT_TKEO_mean)
+
+		# det_LT_TKEO_std
+		det_LT_TKEO_std = get_data_by_expression(wf_data,"^det_LT_TKEO_std")
+		group_correlation(det_LT_TKEO_std)
+
+		# app_LT_entropy
+		app_LT_entropy = get_data_by_expression(wf_data,"^app_LT_entropy")
+		group_correlation(app_LT_entropy)
+
+		# app_LT_entropy_shannon
+		app_LT_entropy_shannon = get_data_by_expression(wf_data,"^app_LT_entropy_shannon")
+		group_correlation(app_LT_entropy_shannon)
+
+		# app_LT_entropy_log
+		app_LT_entropy_log = get_data_by_expression(wf_data,"^app_LT_entropy_log")
+		group_correlation(app_LT_entropy_log)
+
+		# app_LT_TKEO
+		app_LT_TKEO = get_data_by_expression(wf_data,"^app_LT_TKEO")
+		group_correlation(app_LT_TKEO)
+
+		# app_LT_TKEO_mean
+		app_LT_TKEO_mean = get_data_by_expression(wf_data,"^app_LT_TKEO_mean")
+		group_correlation(app_LT_TKEO_mean)
+
+		# app_LT_TKEO_std
+		app_LT_TKEO_std = get_data_by_expression(wf_data,"^app_LT_TKEO_std")
+		group_correlation(app_LT_TKEO_std)
+		
+
+	return new_wf_data
+
+
+
+
 
 
 
