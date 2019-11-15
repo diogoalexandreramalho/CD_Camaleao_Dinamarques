@@ -14,9 +14,10 @@ Prints the values for the class, and plots a bar_chart showing the
 '''
 def unbalanced_data(data):
     target_count = data['class'].value_counts()
+    """
     plt.figure()
     plt.title('Class balance')
-    plt.bar(target_count.index, target_count.values)
+    plt.bar(target_count.index, target_count.values)"""
 
     min_class = target_count.idxmin()
     ind_min_class = target_count.index.get_loc(min_class)
@@ -25,7 +26,7 @@ def unbalanced_data(data):
     print('Majority class(', 1-ind_min_class, '):',  target_count[1 - ind_min_class]) 
     print('Proportion:', round(target_count[ind_min_class] / target_count[1-ind_min_class], 2), ': 1')
 
-    plt.show() 
+    #plt.show() 
     return 0
 
 '''
@@ -54,13 +55,13 @@ def balance_SMOTE(data, strategy: str, random_state=42):
     smote_X, smote_y = smote.fit_sample(X, y)
     smote_target_count = pd.Series(smote_y).value_counts()
     values['SMOTE'] = [smote_target_count.values[ind_min_class], smote_target_count.values[1 - ind_min_class]]
-
+    """
     plt.figure()
     func.multiple_bar_chart(plt.gca(), 
                         [target_count.index[ind_min_class], target_count.index[1-ind_min_class]], 
                         values, 'Target', 'frequency', 'Class balance')
 
-    plt.show()
+    plt.show()"""
 
     new_data = pd.concat([pd.DataFrame(smote_X), pd.DataFrame(smote_y)], axis=1)
 
