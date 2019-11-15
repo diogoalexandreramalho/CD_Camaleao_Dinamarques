@@ -2,29 +2,45 @@ import pandas as pd
 import numpy as np
 from pandas.plotting import register_matplotlib_converters
 
-import data_balancing as smt
-import normalize as nor
+import data_balancing as balance
+import normalize as normalize
 import decision_tree as dt
+import naive_bayes as nb
 #import Feature_Selection as filt
 
-# Diferent strategys = ['minority', 'not majority', 'not minority', 'all' ]
-strategy  = 'all'
 
-data = pd.read_csv('pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 
-norm_data = nor.run(data) #This is a copy
-smote_norm_data = smt.run(norm_data, strategy, 42, False) #This is another copy
-#smote_data = smt.run(data, 'minority', 42)
+def preprocessing(data, normalize_data, balance_data, strategy):
 
-#filtered_data = filt.run(data)
+    if normalize_data:
+        data = normalize.run(data) 
 
-print('Data:\n', data)
-print('Norm Data:\n', norm_data)
-print('Smote + Norm Data:\n', smote_norm_data)
-#print('Smote Data:\n', smote_data)
-print('Data:\n', data)
+    # Strategies: 'minority', 'not majority', 'not minority', 'all' 
+    if balance_data:
+        data = balance.run(data, strategy, 42, False) 
+    
+    return data
 
-dt.decision_tree(smote_norm_data)
+
+def unsupervised(data):
+    pass
+
+
+def classification(data):
+    nb.naive_bayes(data)
+    #dt.decision_tree(data)
+
+
+data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+
+
+type = "classification"
+
+if type == "classification":
+    data = preprocessing(data, True, True, 'all')
+
+    classification(data)
+
 
 
 
