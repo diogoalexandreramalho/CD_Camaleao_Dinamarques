@@ -5,97 +5,94 @@ from pandas.plotting import register_matplotlib_converters
 
 import matplotlib.pyplot as plt
 
-from sklearn.model_selection import train_test_split
 import sklearn.metrics as metrics
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 
-import functions as func
+import plot_functions as func
 
-register_matplotlib_converters()
+def simple_knn(data):
 
-data = pd.read_csv('../1_Dataset/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-print(data)
+    y: np.ndarray = data.pop('class').values
+    X: np.ndarray = data.values
+    labels = pd.unique(y)
 
-print('\n Baseline Features \n')
-baseline = data.loc[:, 'PPE' : 'meanHarmToNoiseHarmonicity']
-#Juntar class
-baseline['Class'] = data['class']
-print(baseline)
+    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
 
-print('\n Filtered Baseline Features \n')
-baseline_filt = baseline.drop(columns=['numPeriodsPulses', 'locPctJitter', 'locAbsJitter',
-    'rapJitter', 'ppq5Jitter', 'locDbShimmer', 'apq3Shimmer', 'apq5Shimmer', 'apq11Shimmer', 
-    'ddaShimmer'])
-print(baseline_filt)
+    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 25, 31, 35, 40, 45, 50, 52, 55, 60, 70, 80, 90, 100, 105, 110, 120, 130, 140, 150]
+    dist = ['manhattan', 'euclidean', 'chebyshev']
+    values = {}
+    for d in dist:
+        yvalues = []
+        for n in nvalues:
+            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+            knn.fit(trnX, trnY)
+            prdY = knn.predict(tstX)
+            yvalues.append(metrics.accuracy_score(tstY, prdY))
+        values[d] = yvalues
 
+    plt.figure()
+    func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants', 'n', 'accuracy', percentage=True)
+    plt.show()
 
-# KNN for Baseline Features - Non-Filtered
+def k_near_ngb(trnX, tstX, trnY, tstY, labels, plot):
+    register_matplotlib_converters()
 
-y: np.ndarray = baseline.pop('Class').values
-X: np.ndarray = baseline.values
-labels: np.ndarray = pd.unique(y)
+    """
+    print(data.shape)
 
-trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+    y: np.ndarray = data.pop('class').values
+    X: np.ndarray = data.values
+    labels = pd.unique(y)
 
-nvalues = [1,3, 5, 7, 9, 11, 13, 15, 17, 19]
-dist = ['manhattan', 'euclidean', 'chebyshev']
-values = {}
-for d in dist:
-    yvalues = []
-    for n in nvalues:
-        knn = KNeighborsClassifier(n_neighbors=n, metric=d)
-        knn.fit(trnX, trnY)
-        prdY = knn.predict(tstX)
-        yvalues.append(metrics.accuracy_score(tstY, prdY))
-    values[d] = yvalues
+    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+    """
+    nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 25, 31, 35, 40, 45, 50, 52, 55, 60, 70, 80, 90, 100, 105, 110, 120, 130, 140, 150]
+    dist = ['manhattan', 'euclidean', 'chebyshev']
 
-plt.figure()
-func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants - Base-NonFilt', 'n', 'accuracy', percentage=True)
-
-# KNN for Baseline Features - Filtered
-
-#y: np.ndarray = baseline_filt.pop('Class').values
-#X: np.ndarray = baseline_filt.values
-#labels: np.ndarray = pd.unique(y)
-#
-#trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
-#
-#nvalues = [1,3, 5, 7, 9, 11, 13, 15, 17, 19]
-#dist = ['manhattan', 'euclidean', 'chebyshev']
-#values = {}
-#for d in dist:
-#    yvalues = []
-#    for n in nvalues:
-#        knn = KNeighborsClassifier(n_neighbors=n, metric=d)
-#        knn.fit(trnX, trnY)
-#        prdY = knn.predict(tstX)
-#        yvalues.append(metrics.accuracy_score(tstY, prdY))
-#    values[d] = yvalues
-#
-#plt.figure()
-#func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants - Base-Filt', 'n', 'accuracy', percentage=True)
+    
+    acc_values = {}
+    sens_values = {}
+    max_accuracy = 0
+    max_sensitivity = 0
 
 
-y: np.ndarray = baseline_filt.pop('Class').values
-X: np.ndarray = baseline_filt.values
-labels: np.ndarray = pd.unique(y)
+    for d in dist:
+        accuracy_values = []
+        sensitivity_values = []
 
-trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+        for n in nvalues:
+            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+            knn.fit(trnX, trnY)
+            prdY = knn.predict(tstX)
+            accuracy = metrics.accuracy_score(tstY, prdY)
+            accuracy_values.append(accuracy)
 
-nvalues = [100, 200, 300, 400]
-dist = ['manhattan', 'euclidean', 'chebyshev']
-values = {}
-for d in dist:
-    yvalues = []
-    for n in nvalues:
-        knn = KNeighborsClassifier(n_neighbors=n, metric=d)
-        knn.fit(trnX, trnY)
-        prdY = knn.predict(tstX)
-        yvalues.append(metrics.accuracy_score(tstY, prdY))
-    values[d] = yvalues
+            tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+            sensitivity = tn/(tn+fp)
+            sensitivity_values.append(sensitivity)
 
-plt.figure()
-func.multiple_line_chart(plt.gca(), nvalues, values, 'KNN variants - Base-Filt k*100', 'n', 'accuracy', percentage=True)
+            cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+            
+            if accuracy > max_accuracy:
+                best_accuracy = [(d, n), accuracy, sensitivity, cnf_mtx]
+                max_accuracy = accuracy
+                
+            if sensitivity > max_sensitivity:
+                best_sensitivity = [(d, n), accuracy, sensitivity, cnf_mtx]
+                max_sensitivity = sensitivity
+        
+        acc_values[d] = accuracy_values
+        sens_values[d] = sensitivity_values
 
-plt.show()
+
+
+    if plot:
+        plt.figure()
+        func.multiple_line_chart(plt.gca(), nvalues, acc_values, 'KNN variants', 'n', 'accuracy', percentage=True)
+        plt.show()
+        func.multiple_line_chart(plt.gca(), nvalues, sens_values, 'KNN variants', 'n', 'sensitivity', percentage=True)
+        plt.show()
+
+    return ["kNN", best_accuracy, best_sensitivity]
