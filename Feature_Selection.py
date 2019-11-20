@@ -12,6 +12,8 @@ from sklearn.feature_selection import SelectKBest, SelectPercentile, SelectFpr
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import SelectFromModel
 
+
+
 #If pd = true, it means that is pd dataset, else is covtype
 # Nao preciso de dois ifs gigante sporque vou estar a repetir codigo
 def feature_selection(data, park):
