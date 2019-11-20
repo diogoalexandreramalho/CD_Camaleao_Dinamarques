@@ -6,14 +6,17 @@ import sklearn.metrics as metrics
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 import plot_functions as plot_funcs
 
-def simple_naive_bayes(trnX, tstX, trnY, tstY):
+def simple_naive_bayes(trnX, tstX, trnY, tstY, labels):
     
     nb = GaussianNB()
     nb.fit(trnX, trnY)
     prdY = nb.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
+
+    return accuracy, specificity
 
 
 def naive_bayes(trnX, tstX, trnY, tstY, labels, plot):

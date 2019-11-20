@@ -11,7 +11,9 @@ from sklearn.feature_selection import chi2, f_classif, mutual_info_classif
 from sklearn.feature_selection import SelectKBest, SelectPercentile, SelectFpr
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import SelectFromModel
+from sklearn.model_selection import train_test_split
 
+import naive_bayes as nb
 
 
 #If pd = true, it means that is pd dataset, else is covtype
@@ -135,11 +137,18 @@ def feature_selection(data, park):
     return
 
 def classify(data, classifier):
+    
+    # separates the dataset in training and testing sets
+    y: np.ndarray = data.pop('class').values
+    X: np.ndarray = data.values
+    labels: np.ndarray = pd.unique(y)
+    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+    
     if(classifier == "knn"):
         return knn(data)
 
     elif(classifier == "bayes"):
-        return bayes(data)
+        return nb.simple_naive_bayes(trnX, tstX, trnY, tstY, labels)
 
     elif(classifier == "decision"):
         return decision(data)
