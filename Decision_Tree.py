@@ -8,6 +8,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import export_graphviz
 
+def simple_decision_tree(trnX, tstX, trnY, tstY, n, d, f):
+
+    dt = DecisionTreeClassifier(min_samples_leaf=n, max_depth=d, criterion=f)
+    dt.fit(trnX, trnY)
+    prdY = dt.predict(tstX)
+    score = metrics.accuracy_score(tstY, prdY)
+
+    return score
+
+
 def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
 
     min_samples_leaf = [.05, .025, .02, .015, .01, .0075, .005, .0025, .001]
@@ -15,7 +25,7 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
     criteria = ['entropy', 'gini']
 
     max_accuracy = 0
-    max_sensitivity = 0
+    max_specificity = 0
     
 
     plt.figure()
@@ -23,10 +33,10 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
     for k in range(len(criteria)):
         f = criteria[k]
         acc_values = {}
-        sens_values = {}
+        spec_values = {}
         for d in max_depths:
             accuracy_values = []
-            sensitivity_values = []
+            specificity_values = []
             for n in min_samples_leaf:
                 tree = DecisionTreeClassifier(min_samples_leaf=n, max_depth=d, criterion=f)
                 tree.fit(trnX, trnY)
@@ -38,21 +48,21 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
 
                 # sensitivity for criteria = f, max_depth = d, min_samples_leaf = n
                 tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
-                sensitivity = tn/(tn+fp)
-                sensitivity_values.append(sensitivity)
+                specificity = tp/(tp+fn)
+                specificity_values.append(specificity)
 
                 cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
 
                 if accuracy > max_accuracy:
-                    best_accuracy = [(f, d, n), accuracy, sensitivity, cnf_mtx]
+                    best_accuracy = [(f, d, n), accuracy, specificity, cnf_mtx]
                     max_accuracy = accuracy
                 
-                if sensitivity > max_sensitivity:
-                    best_sensitivity = [(f, d, n), accuracy, sensitivity, cnf_mtx]
-                    max_sensitivity = sensitivity
+                if specificity > max_specificity:
+                    best_specificity = [(f, d, n), accuracy, specificity, cnf_mtx]
+                    max_specificity = specificity
 
             acc_values[d] = accuracy_values
-            sens_values[d] = sensitivity_values
+            spec_values[d] = specificity_values
 
         func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'nr estimators', 
                                  'accuracy', percentage=True)
@@ -76,6 +86,6 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
         plt.show()
 
 
-    return ["Decision Tree", best_accuracy, best_sensitivity]
+    return ["Decision Tree", best_accuracy, best_specificity]
 
 

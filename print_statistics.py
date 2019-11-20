@@ -59,15 +59,15 @@ def print_stats(reports, pre_parameters):
         print("{}\tb) Confusion matrix: ".format(line))
         line+=1
         line = print_cnf_mtx(best_accuracy[3], line)
-        print("{}\t2.{}.2 Best sensitivity".format(line, i+1))
+        print("{}\t2.{}.2 Best specificity".format(line, i+1))
         line+=1
-        best_sensitivity = reports[i][2]
-        sensitivity_parameters = print_parameters(reports[i][0], best_sensitivity[0])
-        print("{}\ta) Suggested parameterization: {}".format(line, sensitivity_parameters))
+        best_specificity = reports[i][2]
+        specifivity_parameters = print_parameters(reports[i][0], best_specificity[0])
+        print("{}\ta) Suggested parameterization: {}".format(line, specifivity_parameters))
         line+=1
         print("{}\tb) Confusion matrix: ".format(line))
         line+=1
-        line = print_cnf_mtx(best_sensitivity[3], line)
+        line = print_cnf_mtx(best_specificity[3], line)
         print(line)
         line+=1
     print("{}3. Comparative performance: NB | kNN | DT | RF | GB | XGB".format(line))
@@ -77,9 +77,9 @@ def print_stats(reports, pre_parameters):
         accuracies += "{} | ".format("{0:.2f}".format(report[1][1]))
     print("{}\t3.1 Accuracy: ".format(line) + accuracies[:-2])
     line+=1
-    sensitivities = ""
+    specificities = ""
     for report in reports:
-        sensitivities += "{} | ".format("{0:.2f}".format(report[2][2]))
-    print("{}\t3.2 Sensitivity: ".format(line) + sensitivities[:-2])
+        specificities += "{} | ".format("{0:.2f}".format(report[2][2]))
+    print("{}\t3.2 Specificity: ".format(line) + specificities[:-2])
     line+=1
         
