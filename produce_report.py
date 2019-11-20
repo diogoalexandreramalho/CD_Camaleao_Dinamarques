@@ -129,22 +129,20 @@ def classification(data, preproces_params, analysis):
 
 
 
+def produce_report():
 
+    data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 
+    type = "classification"
 
+    if type == "classification":
+        
+        balanced = True
+        normalized = True 
 
-data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+        #trnX, tstX, trnY, tstY, labels = preprocessing(data, balanced, normalized, 'all')
 
-type = "classification"
-
-if type == "classification":
-    
-    balanced = True
-    normalized = True 
-
-    #trnX, tstX, trnY, tstY, labels = preprocessing(data, balanced, normalized, 'all')
-
-    classification(data, (balanced, normalized), False)
+        classification(data, (balanced, normalized), False)
 
 
 
