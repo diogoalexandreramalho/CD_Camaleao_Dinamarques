@@ -282,9 +282,9 @@ def comparePerformance(result):
 
 #Testing
 
-dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+#dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 #dataset = pd.read_csv('covtype.data', sep=',', decimal='.')
-data = dataset.copy()
+#data = dataset.copy()
 #feature_selection_analysis(data, True)
-new_data = feature_selection(data, True).copy()
-print(new_data)
+#new_data = feature_selection(data, True).copy()
+#print(new_data)
