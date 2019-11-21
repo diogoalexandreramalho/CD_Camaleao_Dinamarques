@@ -109,9 +109,9 @@ def feature_selection_analysis(data, park):
             X_new = selector.fit_transform(X, y)
 
             #apply classifier -> Returns accuracy and specificity
-            acc, sens, conf = classify(X_new, y, clf)
+            acc, spec, conf = classify(X_new, y, clf)
             accuracy.append(acc)
-            specificity.append(sens)
+            specificity.append(spec)
 
         #plot performance graphs
         plot(n_features, accuracy, specificity, clf, "SelectKBest")
@@ -135,9 +135,9 @@ def feature_selection_analysis(data, park):
             X_new = selector.fit_transform(X, y)
 
             #apply classifier -> Returns accuracy and specificity
-            acc, sens, conf = classify(X_new, y, clf)
+            acc, spec, conf = classify(X_new, y, clf)
             accuracy.append(acc)
-            specificity.append(sens)
+            specificity.append(spec)
    
         #plot performance graphs
         plot(percentile, accuracy, specificity, clf, "SelectPercentile")
@@ -162,9 +162,9 @@ def feature_selection_analysis(data, park):
     for clf in classifiers:
         #Phase - 2 
         #apply classifier -> Returns accuracy and specificity
-        acc, sens, conf = classify(X_new, y, clf)
+        acc, spec, conf = classify(X_new, y, clf)
         accuracy.append(acc)
-        specificity.append(sens)
+        specificity.append(spec)
 
         performance(accuracy, specificity, number_features, clf, "Wrapper", result_features, result_perf)
 
@@ -185,7 +185,7 @@ def feature_selection_analysis(data, park):
 def classify(X, y, clf): # Este data que esta aqui e um np.array -_-
     
     labels: np.ndarray = pd.unique(y)
-    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y, random_state=41)
     
     # normalize and balance the dataset
     trnX, tstX, trnY, tstY = norm.standardScaler(trnX, tstX, trnY, tstY)

@@ -15,10 +15,11 @@ def simple_decision_tree(trnX, tstX, trnY, tstY, n, d, f, labels):
     prdY = dt.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
+    return accuracy, specificity, cnf_matrix
 
 
 def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
