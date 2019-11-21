@@ -14,10 +14,11 @@ def simple_random_forest(trnX, tstX, trnY, tstY, n, d, f, labels):
     prdY = rf.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
+    return accuracy, specificity, cnf_matrix
 
 
 def random_forest(trnX, tstX, trnY, tstY, labels, plot):

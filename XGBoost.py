@@ -13,10 +13,11 @@ def simple_xg_boost(trnX, tstX, trnY, tstY, n, d, labels):
     prdY = xgb.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
+    return accuracy, specificity, cnf_matrix
 
 def xg_boost(trnX, tstX, trnY, tstY, labels, plot):
     
