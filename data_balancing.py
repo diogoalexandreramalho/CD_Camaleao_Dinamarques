@@ -8,6 +8,11 @@ from pandas.plotting import register_matplotlib_converters
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 
+import Normalize as norm
+import naive_bayes as nb
+import KNN as knn
+import decision_tree as dt
+
 '''
 Prints the values for the class, and plots a bar_chart showing the
     difference
