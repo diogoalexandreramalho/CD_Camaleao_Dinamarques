@@ -1,4 +1,3 @@
-import arff #from liac-arff package
 import pandas as pd
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_classif

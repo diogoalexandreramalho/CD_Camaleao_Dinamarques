@@ -28,7 +28,7 @@ def unsupervised(data):
 
 def classification(data):
     
-    # split dataset in target variable and atributes
+    # split data set in target variable and atributes
     y: np.ndarray = data.pop('class').values
     X: np.ndarray = data.values
     labels: np.ndarray = pd.unique(y)
@@ -77,6 +77,7 @@ def classification(data):
         avg_spec_clf = sum(specificities[clf])/len(specificities[clf])
         avg_specificities += [avg_spec_clf]
     
+    # create report for each classifier with struct [clf_name, params, acc, spec, cnf_mtx]
     nb_report = ["Naive Bayes", ('GaussianNB'), avg_accuracys[0], avg_specificities[0], cnf_mtx]
     knn_report = ["kNN", ('manhattan', 1), avg_accuracys[1], avg_specificities[1], cnf_mtx]
     dt_report = ["Decision Tree", ('entropy', 5, 0.05), avg_accuracys[2], avg_specificities[2], cnf_mtx]
@@ -89,8 +90,5 @@ def classification(data):
     stats.print_report(reports, (True, True))
 
 
-data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-
-classification(data)
 
 

@@ -23,10 +23,13 @@ def classification(data, analysis):
     balanced = True
     normalized = True 
 
+    # get 1000 samples per class and get new data set
+
     # separates the dataset in training and testing sets
     y: np.ndarray = data.pop('class').values
     X: np.ndarray = data.values
     labels: np.ndarray = pd.unique(y)
+
     trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
 
     # normalize and balance the dataset
