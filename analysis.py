@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
 import KNN as knn
-import decision_tree as dt
+import Decision_Tree as dt
 import naive_bayes as nb
 import RandomForest as rf
 import GradientBoost as gb
@@ -38,13 +38,13 @@ def classification(data, analysis):
 
     # find best classifier
     #nb_report = nb.naive_bayes(trnX, tstX, trnY, tstY, labels, False)
-    #knn_report = knn.k_near_ngb(trnX, tstX, trnY, tstY, labels, True)
-    dt_report = dt.decision_tree(trnX, tstX, trnY, tstY, labels, False, False)
+    knn_report = knn.k_near_ngb(trnX, tstX, trnY, tstY, labels, True)
+    #dt_report = dt.decision_tree(trnX, tstX, trnY, tstY, labels, False, False)
     #rf_report = rf.random_forest(trnX, tstX, trnY, tstY, labels, False)
     #gb_report = gb.gradient_boost(trnX, tstX, trnY, tstY, labels, False)
     #xgb_report = xgb.xg_boost(trnX, tstX, trnY, tstY, labels, False)
 
-    reports = [dt_report]
+    reports = [knn_report]
     #reports = [nb_report, knn_report, dt_report, rf_report, gb_report, xgb_report]
 
     stats.print_analysis(reports, (balanced, normalized))

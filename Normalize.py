@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import data_balancing as balance
 import naive_bayes as nb
 import KNN as knn
-import decision_tree as dt
+import Decision_Tree as dt
 
 def standardScaler(trnX, tstX, trnY, tstY):
 
