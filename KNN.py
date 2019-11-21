@@ -18,11 +18,12 @@ def simple_knn(trnX, tstX, trnY, tstY, n, d, labels):
     prdY = knn.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
-
+    return accuracy, specificity, cnf_matrix
+    
 
 def k_near_ngb(trnX, tstX, trnY, tstY, labels, plot):
     register_matplotlib_converters()
