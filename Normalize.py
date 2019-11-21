@@ -53,10 +53,7 @@ def normalize_analysis(data, park):
     print("Normalization Performance")
     for clf in classifiers:
         for n in normalizers:
-            if (clf == 'tree'):
-                acc, spec = classify(trnX, tstX, trnY, tstY, labels, clf, n)
-            else:
-                acc, spec, conf = classify(trnX, tstX, trnY, tstY, labels, clf, n)
+            acc, spec, conf = classify(trnX, tstX, trnY, tstY, labels, clf, n)
             
             accuracy.append(acc)
             specificity.append(spec)
@@ -91,13 +88,13 @@ def classify(trnX, tstX, trnY, tstY, labels, clf, n): # Este data que esta aqui 
 
 def performance(accuracy, specificity, clf):
     print("minMaxScaler | standardScaler | none")
-    print("\t Usign Classifier:" + clf)
+    print("\t Using Classifier:" + clf)
     print("\t\t Accuracy: ", accuracy)
     print("\t\t Specificity: ", specificity)
 
 #Testing
 
-#dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-#data = dataset.copy()
-#normalize_analysis(data, True)
+dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+data = dataset.copy()
+normalize_analysis(data, True)
 
