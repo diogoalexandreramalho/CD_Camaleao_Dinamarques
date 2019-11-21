@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-import produce_report as pr
+import Classification as classif
 import Unsupervised as unsup
 
 def report(source, dataframe, task):
@@ -14,8 +14,9 @@ def report(source, dataframe, task):
         i+=1
     del dataframe['class\r']
     
+
     if task == "classification":
-        pr.classification(dataframe)
+        classif.classification(dataframe)
     elif task == "unsupervised":
         unsup.run(source, dataframe)
     else:

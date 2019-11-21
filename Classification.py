@@ -8,22 +8,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
 import KNN as knn
-import decision_tree as dt
+import Decision_Tree as dt
 import naive_bayes as nb
 import RandomForest as rf
 import GradientBoost as gb
 import XGBoost as xgb
 
 import print_statistics as stats
-
-
-
-def preprocessing(trnX, tstX, trnY, tstY, balance_data, normalize_data, strategy):
-    pass
-
-
-def unsupervised(data):
-    pass
 
 
 def classification(data):
@@ -52,11 +43,11 @@ def classification(data):
         acc = [0,0,0,0,0,0]
         spec = [0,0,0,0,0,0]
         acc[0], spec[0], cnf_mtx = nb.simple_naive_bayes(trnX, tstX, trnY, tstY, labels)
-        acc[1], spec[1] = knn.simple_knn(trnX, tstX, trnY, tstY, 1, 'manhattan', labels)
-        acc[2], spec[2] = dt.simple_decision_tree(trnX, tstX, trnY, tstY, 0.05, 5, 'entropy', labels)
-        acc[3], spec[3] = rf.simple_random_forest(trnX, tstX, trnY, tstY, 150, 10, 'sqrt', labels)
-        acc[4], spec[4] = gb.simple_gradient_boost(trnX, tstX, trnY, tstY, 100, 0.1, 5, 'sqrt', labels)
-        acc[5], spec[5] = xgb.simple_xg_boost(trnX, tstX, trnY, tstY, 200, 5, labels)
+        acc[1], spec[1], cnf_mtx = knn.simple_knn(trnX, tstX, trnY, tstY, 1, 'manhattan', labels)
+        acc[2], spec[2], cnf_mtx = dt.simple_decision_tree(trnX, tstX, trnY, tstY, 0.05, 5, 'entropy', labels)
+        acc[3], spec[3], cnf_mtx = rf.simple_random_forest(trnX, tstX, trnY, tstY, 150, 10, 'sqrt', labels)
+        acc[4], spec[4], cnf_mtx = gb.simple_gradient_boost(trnX, tstX, trnY, tstY, 100, 0.1, 5, 'sqrt', labels)
+        acc[5], spec[5], cnf_mtx = xgb.simple_xg_boost(trnX, tstX, trnY, tstY, 200, 5, labels)
         
         # store metrics
         i = 0

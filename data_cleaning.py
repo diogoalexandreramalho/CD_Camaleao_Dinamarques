@@ -8,10 +8,10 @@ import seaborn as sns
 import numpy as np
 
 
-register_matplotlib_converters()
+"""register_matplotlib_converters()
 data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
 
-print(data.describe())
+print(data.describe())"""
 
 
 # Creates a dic with a list of columns names associated to the titles given in the csv file
