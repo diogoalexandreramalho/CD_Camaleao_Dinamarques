@@ -94,7 +94,7 @@ def performance(accuracy, specificity, clf):
 
 #Testing
 
-dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-data = dataset.copy()
-normalize_analysis(data, True)
+#dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+#data = dataset.copy()
+#normalize_analysis(data, True)
 
