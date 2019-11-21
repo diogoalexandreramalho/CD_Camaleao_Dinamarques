@@ -8,14 +8,17 @@ from sklearn.ensemble import GradientBoostingClassifier
 import plot_functions as func
 
 
-def simple_gradient_boost(trnX, tstX, trnY, tstY, n, l, d, f):
+def simple_gradient_boost(trnX, tstX, trnY, tstY, n, l, d, f, labels):
 
     gb = GradientBoostingClassifier(n_estimators=n, learning_rate=l, max_depth=d, max_features=f)
     gb.fit(trnX, trnY)
     prdY = gb.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
+
+    return accuracy, specificity
 
 
 def gradient_boost(trnX, tstX, trnY, tstY, labels, plot):

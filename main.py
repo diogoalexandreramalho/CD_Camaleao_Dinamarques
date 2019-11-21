@@ -1,7 +1,14 @@
 import sys, pandas as pd
+import produce_report as pr
 
 def report(source, dataframe, task):
-    return "NA"
+    if task == "classification":
+        pr.classification(dataframe)
+    elif task == "unsupervised":
+        pr.unsupervised(dataframe)
+    else:
+        pr.preprocessing(dataframe)
+         
 
 if __name__ == '__main__':
 

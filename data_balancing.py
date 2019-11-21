@@ -29,11 +29,9 @@ def unbalanced_data(data):
     #plt.show() 
     return 0
 
-'''
-Balances the given dataset and a strategy using SMOTE
-Shows a bar_chart with the given result
-'''
-def balance_SMOTE(data, strategy: str, random_state=42):
+
+# balance by oversampling the minority class using SMOTE
+def balance_SMOTE(data, strategy: str, plot, random_state=42):
     target_count = data['class'].value_counts()
     min_class = target_count.idxmin()
     ind_min_class = target_count.index.get_loc(min_class)
@@ -55,29 +53,37 @@ def balance_SMOTE(data, strategy: str, random_state=42):
     smote_X, smote_y = smote.fit_sample(X, y)
     smote_target_count = pd.Series(smote_y).value_counts()
     values['SMOTE'] = [smote_target_count.values[ind_min_class], smote_target_count.values[1 - ind_min_class]]
-    """
-    plt.figure()
-    func.multiple_bar_chart(plt.gca(), 
-                        [target_count.index[ind_min_class], target_count.index[1-ind_min_class]], 
-                        values, 'Target', 'frequency', 'Class balance')
+    
+    if plot:
+        plt.figure()
+        func.multiple_bar_chart(plt.gca(), 
+                            [target_count.index[ind_min_class], target_count.index[1-ind_min_class]], 
+                            values, 'Target', 'frequency', 'Class balance')
 
-    plt.show()"""
+        plt.show()
 
-    new_data = pd.concat([pd.DataFrame(smote_X), pd.DataFrame(smote_y)], axis=1)
+    df_smote_y = pd.DataFrame(smote_y, columns=['class'])
+    new_data = pd.concat([pd.DataFrame(smote_X), df_smote_y], axis=1)
 
     return new_data    
 
 
-def run(data: pd.DataFrame, strategy: str, random_number, plot):
+def run(trnX, trnY, strategy: str, random_number, plot):
     register_matplotlib_converters()
     
-    #This needs to be a copy
-    data1 = data.copy(deep=True)
+    # create dataframe from training set
+    df_trnX = pd.DataFrame(trnX)
+    df_trnY = pd.DataFrame(trnY, columns = ['class'])
+    df_trn = pd.concat([df_trnX, df_trnY], axis=1, sort=False)
 
     if plot:
-        unbalanced_data(data) #Shows unbalnced data
+        unbalanced_data(df_trn) #Shows unbalnced data
 
-    new_data = balance_SMOTE(data1, strategy, random_number) # Shows Smote, and returns new_data
+    # balance training set
+    df_trn = balance_SMOTE(df_trn, strategy, plot, random_number) # Shows Smote, and returns new_data
+
+    # split training set in attributes and target
+    trnY = df_trn.pop('class').values
+    trnX = df_trn.values
     
-    new_data.columns = data.columns.tolist()
-    return new_data
+    return trnX, trnY

@@ -6,15 +6,17 @@ import sklearn.metrics as metrics
 import plot_functions as func
 
 
-def simple_xg_boost(trnX, tstX, trnY, tstY, n, d):
+def simple_xg_boost(trnX, tstX, trnY, tstY, n, d, labels):
 
     xgb = XGBClassifier(n_estimators=n, max_depth=d)
     xgb.fit(trnX, trnY)
     prdY = xgb.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
 
+    return accuracy, specificity
 
 def xg_boost(trnX, tstX, trnY, tstY, labels, plot):
     

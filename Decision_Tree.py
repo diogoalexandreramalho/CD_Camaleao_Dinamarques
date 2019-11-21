@@ -8,14 +8,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import export_graphviz
 
-def simple_decision_tree(trnX, tstX, trnY, tstY, n, d, f):
+def simple_decision_tree(trnX, tstX, trnY, tstY, n, d, f, labels):
 
     dt = DecisionTreeClassifier(min_samples_leaf=n, max_depth=d, criterion=f)
     dt.fit(trnX, trnY)
     prdY = dt.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
+
+    return accuracy, specificity
 
 
 def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):

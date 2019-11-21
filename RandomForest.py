@@ -7,14 +7,17 @@ from sklearn.ensemble import RandomForestClassifier
 import plot_functions as func
 
 
-def simple_random_forest(trnX, tstX, trnY, tstY, n, d, f):
+def simple_random_forest(trnX, tstX, trnY, tstY, n, d, f, labels):
 
     rf = RandomForestClassifier(n_estimators=n, max_depth=d, max_features=f)
     rf.fit(trnX, trnY)
     prdY = rf.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
+
+    return accuracy, specificity
 
 
 def random_forest(trnX, tstX, trnY, tstY, labels, plot):

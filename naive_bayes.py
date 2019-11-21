@@ -13,18 +13,17 @@ def simple_naive_bayes(trnX, tstX, trnY, tstY, labels):
     prdY = nb.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
+    return accuracy, specificity, cnf_matrix
 
 
 def naive_bayes(trnX, tstX, trnY, tstY, labels, plot):
     register_matplotlib_converters()
 
-    estimators = {'GaussianNB': GaussianNB(), 
-                'MultinomialNB': MultinomialNB(), 
-                'BernoulyNB': BernoulliNB()}
+    estimators = {'GaussianNB': GaussianNB()}
 
     xvalues = []
     accuracy_values = []

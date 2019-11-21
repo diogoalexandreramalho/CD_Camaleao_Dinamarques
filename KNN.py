@@ -11,14 +11,17 @@ from sklearn.neighbors import KNeighborsClassifier
 
 import plot_functions as func
 
-def simple_knn(trnX, tstX, trnY, tstY, n, d):
+def simple_knn(trnX, tstX, trnY, tstY, n, d, labels):
 
     knn = KNeighborsClassifier(n_neighbors=n, metric=d)
     knn.fit(trnX, trnY)
     prdY = knn.predict(tstX)
-    score = metrics.accuracy_score(tstY, prdY)
+    accuracy = metrics.accuracy_score(tstY, prdY)
 
-    return score
+    tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
+    specificity = tp/(tp+fn)
+
+    return accuracy, specificity
 
 
 def k_near_ngb(trnX, tstX, trnY, tstY, labels, plot):
