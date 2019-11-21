@@ -79,11 +79,14 @@ def run(source,data):
     number_of_rules = []
     
     #Multiple Line Chart
-    minsup_list = [0,70, 0.72, 0.75, 0.78, 0.85, 0.88, 0.9, 0.92, 0.95]
+    minsup_list = [0.8,  0.85, 0.9, 0.95]
     for sup in minsup_list:
+        print(sup)
+
         frequent_itemsets = apriori(dummified_df, min_support=sup, use_colnames=True)
-        minconf = 0.8
+        minconf = 0.9
         rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=minconf)
+        print("passei")
         rules["antecedent_len"] = rules["antecedents"].apply(lambda x: len(x))
         print(rules[(rules['antecedent_len']>=2)])
     
@@ -111,6 +114,7 @@ def run(source,data):
         avg_lift_list.append(avg_lift)
         avg_leverage_list.append(avg_leverage)
         number_of_rules.append(rules.shape[0])
+
 
     plt.figure(figsize=(12,4))
     series = { 'leverage': avg_leverage_list, 'avg_confidence': avg_confidence_list, 'avg_lift': avg_lift_list}

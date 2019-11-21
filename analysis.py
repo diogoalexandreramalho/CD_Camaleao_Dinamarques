@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import data_balancing as balance
-import normalize as norm
+import Normalize as norm
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
