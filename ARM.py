@@ -79,7 +79,7 @@ def run(source,data):
     number_of_rules = []
     
     #Multiple Line Chart
-    minsup_list = [0.65, 0.65, 0.75, 0.85, 0.95]
+    minsup_list = [0,70, 0.72, 0.75, 0.78, 0.85, 0.88, 0.9, 0.92, 0.95]
     for sup in minsup_list:
         frequent_itemsets = apriori(dummified_df, min_support=sup, use_colnames=True)
         minconf = 0.8
@@ -98,7 +98,6 @@ def run(source,data):
         avg_leverage = 0
 
         for i in range(len(confidence)):
-            print(confidence[i])
             avg_confidence += confidence[i]
             avg_lift += lift[i]
             avg_leverage += leverage[i]
@@ -117,3 +116,10 @@ def run(source,data):
     series = { 'leverage': avg_leverage_list, 'avg_confidence': avg_confidence_list, 'avg_lift': avg_lift_list}
     func.multiple_line_chart(plt.gca(), minsup_list, series, 'Rules Quality', 'date', '')
     plt.show()
+
+    plt.figure(figsize=(12,4))
+    series = { 'number_of_rules' : number_of_rules}
+    func.multiple_line_chart(plt.gca(), minsup_list, series, 'Rules Quality', 'date', '')
+    plt.show()
+
+    

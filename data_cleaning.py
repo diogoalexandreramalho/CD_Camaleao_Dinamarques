@@ -60,6 +60,12 @@ def get_data_from_dic(dic,group_name):
 	return data[lst]
 
 
+# get the data associated to a set of variables
+def get_data_from_dic2(data, dic,group_name):
+	lst = dic[group_name]
+	return data[lst]
+
+
 # get group of data associated based on a regular expression
 def get_data_by_expression(group_data, reg_expression):
 	group_lst = []

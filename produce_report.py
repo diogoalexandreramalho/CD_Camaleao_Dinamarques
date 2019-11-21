@@ -3,7 +3,7 @@ import numpy as np
 from pandas.plotting import register_matplotlib_converters
 
 import data_balancing as balance
-import normalize as norm
+import Normalize as norm
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
