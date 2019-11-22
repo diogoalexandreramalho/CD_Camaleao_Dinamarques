@@ -99,7 +99,7 @@ def decision_tree_CT(trnX, tstX, trnY, tstY, labels, plot, png):
 def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
 
     min_samples_leaf = [.05, .025, .02, .015, .01, .0075, .005, .0025, .001]
-    max_depths = [5, 10, 25, 30, 40, 45, 50, 55, 60, 70, 100, 200, 400]
+    max_depths = [2, 3, 4, 5, 7, 10, 25, 30, 40, 50, 70, 100, 200, 400]
     criteria = ['entropy', 'gini']
 
     max_accuracy = 0
@@ -142,8 +142,10 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
             acc_values[d] = accuracy_values
             spec_values[d] = specificity_values
 
-        func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'min samples leaf', 
-                                 'accuracy', percentage=True)
+        """func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'min samples leaf', 
+                                 'accuracy', percentage=True)"""
+        func.multiple_line_chart(axs[0, k], min_samples_leaf, spec_values, 'Decision Trees with %s criteria'%f, 'min samples leaf', 
+                                 'specificity', percentage=True)
 
 
 

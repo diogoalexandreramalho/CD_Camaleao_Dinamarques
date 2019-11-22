@@ -30,7 +30,7 @@ def simple_gradient_boost_CT(trnX, tstX, trnY, tstY, n, l, d, f, labels):
     prdY = gb.predict(tstX)
     
     accuracy = metrics.accuracy_score(tstY, prdY)
-    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
     
     return accuracy, cnf_mtx
 
@@ -38,8 +38,8 @@ def simple_gradient_boost_CT(trnX, tstX, trnY, tstY, n, l, d, f, labels):
 
 def gradient_boost_CT(trnX, tstX, trnY, tstY, labels, plot):
 
-    lr_list = [0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1]
-    n_estimators = [5, 10, 25, 50, 75, 100, 150, 200, 250, 300]
+    lr_list = [0.05, 0.075, 0.1, 0.5, 1]
+    n_estimators = [5, 20, 50, 100, 150, 200, 250, 300]
     max_depths = [5, 10, 25, 50]
     max_features = ['sqrt', 'log2']
 

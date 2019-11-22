@@ -38,7 +38,7 @@ def simple_random_forest_CT(trnX, tstX, trnY, tstY, n, d, f, labels):
 def random_forest_CT(trnX, tstX, trnY, tstY, labels, plot):
 
     n_estimators = [5, 10, 25, 50, 75, 100, 110,130,150,170,185, 200, 250, 300, 350,400, 450, 500]
-    max_depths = [5, 10, 25, 50]
+    max_depths = [5, 10, 25, 30, 40, 50, 60, 70]
     max_features = ['sqrt', 'log2']
 
     max_accuracy = 0
@@ -81,8 +81,8 @@ def random_forest_CT(trnX, tstX, trnY, tstY, labels, plot):
 
 def random_forest(trnX, tstX, trnY, tstY, labels, plot):
 
-    n_estimators = [5, 10, 25, 50, 75, 100, 110,130,150,170,185, 200, 250, 300, 350,400, 450, 500]
-    max_depths = [5, 10, 25, 50]
+    n_estimators = [5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    max_depths = [5, 10, 25, 40, 50, 60, 70]
     max_features = ['sqrt', 'log2']
 
     max_accuracy = 0

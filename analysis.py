@@ -15,10 +15,14 @@ import XGBoost as xgb
 
 import print_statistics as stats
 
+import time
+import datetime
+
 
 
 
 def classification(data, source, analysis):
+
     if source == "CT":
         # get 1000 samples per class and get new data set
         data = data.groupby('Cover_Type').apply(lambda s: s.sample(1000))
@@ -42,24 +46,44 @@ def classification(data, source, analysis):
     trnX, trnY = balance.run(trnX, trnY, 'all', 42, False)
 
     if source == "PD":
+        start = time.time()
         # find best model for each classifier
+        #print("NB")
         #nb_report = nb.naive_bayes(trnX, tstX, trnY, tstY, labels, False)
+        #print("KNN")
         #knn_report = knn.k_near_ngb(trnX, tstX, trnY, tstY, labels, True)
-        dt_report = dt.decision_tree(trnX, tstX, trnY, tstY, labels, True, False)
-        #rf_report = rf.random_forest(trnX, tstX, trnY, tstY, labels, False)
+        #print("DT")
+        #dt_report = dt.decision_tree(trnX, tstX, trnY, tstY, labels, True, False)
+        print("RF")
+        rf_report = rf.random_forest(trnX, tstX, trnY, tstY, labels, True)
+        #print("GB")
         #gb_report = gb.gradient_boost(trnX, tstX, trnY, tstY, labels, False)
+        #print("XGB")
         #xgb_report = xgb.xg_boost(trnX, tstX, trnY, tstY, labels, False)
+        end = time.time() - start
+        time1 = str(datetime.timedelta(seconds=end)) 
+        print("Time: " + time1)
     else:
         # find best model for each classifier
-        nb_report = nb.naive_bayes_CT(trnX, tstX, trnY, tstY, labels, False)
-        knn_report = knn.k_near_ngb_CT(trnX, tstX, trnY, tstY, labels, False)
-        dt_report = dt.decision_tree_CT(trnX, tstX, trnY, tstY, labels, False, False)
-        rf_report = rf.random_forest_CT(trnX, tstX, trnY, tstY, labels, False)
-        gb_report = gb.gradient_boost_CT(trnX, tstX, trnY, tstY, labels, False)
-        xgb_report = xgb.xg_boost_CT(trnX, tstX, trnY, tstY, labels, False)
+        start = time.time()
+        #print("NB")
+        #nb_report = nb.naive_bayes_CT(trnX, tstX, trnY, tstY, labels)
+        #print("KNN")
+        #knn_report = knn.k_near_ngb_CT(trnX, tstX, trnY, tstY, labels, True)
+        #print("DT")
+        #dt_report = dt.decision_tree_CT(trnX, tstX, trnY, tstY, labels, True, False)
+        print("RF")
+        rf_report = rf.random_forest_CT(trnX, tstX, trnY, tstY, labels, True)
+        #print("GB")
+        #gb_report = gb.gradient_boost_CT(trnX, tstX, trnY, tstY, labels, True)
+        #print("XGB")
+        #xgb_report = xgb.xg_boost_CT(trnX, tstX, trnY, tstY, labels, False)
+        end = time.time() - start
+        time1 = str(datetime.timedelta(seconds=end)) 
+        print("Time: " + time1)
 
-    #reports = [rf_report]
-    reports = [nb_report, knn_report, dt_report, rf_report, gb_report, xgb_report]
+    reports = [rf_report]
+    #reports = [nb_report, knn_report, dt_report, rf_report, gb_report, xgb_report]
     
     if source == "PD":
         stats.print_analysis(reports, (balanced, normalized))
@@ -70,10 +94,10 @@ def classification(data, source, analysis):
 
 def produce_analysis():
 
-    #data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-    data = pd.read_csv('Data/covtype.csv', sep=',', decimal='.')
+    data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+    #data = pd.read_csv('Data/covtype.csv', sep=',', decimal='.')
 
-    classification(data, "CT", True)
+    classification(data, "PD", True)
 
 
 produce_analysis()

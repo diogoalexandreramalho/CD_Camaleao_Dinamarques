@@ -115,7 +115,7 @@ def classification(data, source):
 
         stats.print_report(reports, (True, True))
     else:
-        params = [('GaussianNB'), ('manhattan', 1), ('entropy', 5, 0.05), ('sqrt', 10, 150), ('sqrt', 5, 100, 0.1), (5, 200)]
+        params = [('GaussianNB'), ('manhattan', 1), ('entropy', 50, 0.00005), ('sqrt', 25, 185), ('sqrt', 5, 100, 0.1), (5, 200)]
         
         nb_report = [clf_names[0], [params[0], avg_accuracys[0], cnf_mtxs[0]]]
         knn_report =[clf_names[1], [params[1], avg_accuracys[1], cnf_mtxs[1]]]
