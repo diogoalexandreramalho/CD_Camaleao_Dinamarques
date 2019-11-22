@@ -9,58 +9,65 @@ import matplotlib.pyplot as plt
 import plot_functions as func
 import data_cleaning as cleaner
 
-# The set of regressors that will be tested sequentially
-# y the data matrix
-def run(source,data):
 
-    data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)    
+def run(source,data, group=None):
+
+    dataPD = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)    
+    dataCT = pd.read_csv('Data/covtype_test.data', sep=',', decimal='.')
 
     if source == "PD":
         target = "class"
+        data = dataPD
     else:
         target = "Cover_Type"
+        data = dataCT
     
     y = data.pop(target).values
-    
-    dic = cleaner.general_dic(False)
-    mfcc_data = cleaner.get_data_from_dic2(data,dic,"Baseline Features")
-
-
     X: np.ndarray = data.values
-    labels = pd.unique(y)
+    #labels = pd.unique(y)
 
-    #trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+    if source == "PD":
+
+        # Select the best 10 features that describe the model
+        selector = SelectKBest(f_classif, k=10)
+        kb = selector.fit_transform(X,y)
+
+        new_data = pd.DataFrame(kb)
+
+        # Get Features Selected Names
+        features_selected_bool = selector.get_support()
+        i = 0
+        features_selected_list = []
+        for col in data.columns:
+            if features_selected_bool[i] == True:
+                features_selected_list.append(col)
+            i+=1
+        
+        print("Features Selected : \n")
+        for feat in features_selected_list:
+            print(feat)
+        print("\n")
     
-    """
-    # Select the best 10 features that describe the model
-    selector = SelectKBest(f_classif, k=10)
-    kb = selector.fit_transform(X,y)
+    else:
+        new_data = data
 
-    new_data = pd.DataFrame(kb)
-
-    # Get Features Selected Names
-    features_selected_bool = selector.get_support()
-    i = 0
-    features_selected_list = []
-    for col in data.columns:
-        if features_selected_bool[i] == True:
-            features_selected_list.append(col)
-        i+=1
-    
-    print("Features Selected : \n")
-    for feat in features_selected_list:
-        print(feat)
-    print("\n")
-    """
+    #Discretize  - Discretization for dataset1
+    if source == "PD":
+        newdf = new_data.copy()
+        for col in newdf:
+            newdf[col] = pd.qcut(newdf[col], 4, labels=['0','1','2','3'])
+        print(newdf)
+    else:
+        #Discretize  - Discretization for dataset2
+        i = 0
+        newdf = new_data.copy()
+        for col in newdf:
+            if i<10:
+                newdf[col] = pd.qcut(newdf[col], 5, labels=['0','1','2','3','4'])
+            i+=1
+        print(newdf)
 
 
-    #Discretize  - Divide the real variables into three different groups (1,2,3)
-    newdf = mfcc_data.copy()
-    for col in newdf:
-        newdf[col] = pd.cut(newdf[col], 2, labels=['0','1'])
-
-    #
-    #
     #Dummify - for each nominal variable , create additional variables for each possible nominal value
     dummylist = []
     for att in newdf:
@@ -69,61 +76,90 @@ def run(source,data):
 
     print(dummified_df)
 
-    """
-    Line graph com numero de patterns, avg quality , avg quality, top n rules, rules por support 
+        
+    #if source == "CT":
+    #    dummified_df = dummified_df.drop(columns=["y0"])
 
-    """
+
+    ######## Pattern Mining #############
+
     avg_confidence_list = []
     avg_lift_list = []
     avg_leverage_list = []
     number_of_rules = []
-    
-    #Multiple Line Chart
-    minsup_list = [0.8,  0.85, 0.9, 0.95]
+    avg_top_rules_list = []
+    minsup_list = [0.05,0.07,0.09,0.11,0.13,0.15,0.17,0.2,0.22]
     for sup in minsup_list:
-        print(sup)
-
-        frequent_itemsets = apriori(dummified_df, min_support=sup, use_colnames=True)
-        minconf = 0.9
+        frequent_itemsets = apriori(dummified_df, min_support=sup, use_colnames=True)        
+        minconf = 0.6
         rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=minconf)
         print("passei")
         rules["antecedent_len"] = rules["antecedents"].apply(lambda x: len(x))
-        print(rules[(rules['antecedent_len']>=2)])
-    
         print(rules)
-
+    
         confidence = rules["confidence"].values
         lift = rules["lift"].values
         leverage = rules["leverage"].values
+        antecedent = rules["antecedents"].values
+        consequent = rules["consequents"].values
 
         avg_confidence = 0
         avg_lift = 0
         avg_leverage = 0
 
+        top_rules_size = 5
+
+        top_rules_confidence = []
+        top_rules = []
+
         for i in range(len(confidence)):
             avg_confidence += confidence[i]
             avg_lift += lift[i]
             avg_leverage += leverage[i]
+            
+            rule = str(tuple(antecedent[i])) + "->" + str(tuple(consequent[i]))
+            if len(top_rules_confidence) < top_rules_size and rule not in top_rules:
+                top_rules_confidence.append(confidence[i])
+                top_rules.append(rule)
+            else:
+                for x in range(len(top_rules_confidence)):
+                    if confidence[i] > top_rules_confidence[x] and  rule not in top_rules :
+                        top_rules_confidence[x] = confidence[i]
+                        top_rules[x] = rule        
 
         avg_confidence /= len(confidence)
         avg_lift /= len(lift)
         avg_leverage /= len(leverage)
+        #avg_top_rules_confidence = sum(top_rules_confidence) / len(top_rules_confidence)
         
-
         avg_confidence_list.append(avg_confidence)
         avg_lift_list.append(avg_lift)
         avg_leverage_list.append(avg_leverage)
         number_of_rules.append(rules.shape[0])
+        #avg_top_rules_list.append(avg_top_rules_confidence)
+
+        for rule in top_rules:
+            print(rule)
+
+    ###### Multiple Line Chart with Average measures of the rules per support ######
 
 
     plt.figure(figsize=(12,4))
     series = { 'leverage': avg_leverage_list, 'avg_confidence': avg_confidence_list, 'avg_lift': avg_lift_list}
-    func.multiple_line_chart(plt.gca(), minsup_list, series, 'Rules Quality', 'date', '')
+    func.multiple_line_chart(plt.gca(), minsup_list, series, 'Rules Quality per Support', 'support', '')
     plt.show()
+
+    ###### Line Chart with number of rules per support  ######
 
     plt.figure(figsize=(12,4))
     series = { 'number_of_rules' : number_of_rules}
-    func.multiple_line_chart(plt.gca(), minsup_list, series, 'Rules Quality', 'date', '')
+    func.multiple_line_chart(plt.gca(), minsup_list, series, 'Number of Rules per Support', 'support', '')
     plt.show()
 
-    
+
+
+def statistics(source,data):
+
+    print("1. Pattern Mining")
+    print(" List of supports used : [0.3,0.35,0.4,0.45,0.50,0.55,0.6,0.65,0.7,0.75,0.8]")
+    print(" Rules Quality measures used : confidence, lift, leverage")
