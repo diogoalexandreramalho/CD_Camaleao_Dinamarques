@@ -18,24 +18,31 @@ def simple_knn(trnX, tstX, trnY, tstY, n, d, labels):
     prdY = knn.predict(tstX)
     accuracy = metrics.accuracy_score(tstY, prdY)
 
+    cnf_matrix = metrics.confusion_matrix(tstY, prdY, labels)
     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
     specificity = tp/(tp+fn)
 
-    return accuracy, specificity
+    return accuracy, specificity, cnf_matrix
+    
+
+
+def simple_knn_CT(trnX, tstX, trnY, tstY, n, d, labels):
+
+    knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+    knn.fit(trnX, trnY)
+    prdY = knn.predict(tstX)
+   
+    accuracy = metrics.accuracy_score(tstY, prdY)
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+    
+    return accuracy, cnf_mtx
+
 
 
 def k_near_ngb(trnX, tstX, trnY, tstY, labels, plot):
     register_matplotlib_converters()
 
-    """
-    print(data.shape)
-
-    y: np.ndarray = data.pop('class').values
-    X: np.ndarray = data.values
-    labels = pd.unique(y)
-
-    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
-    """
+    
     nvalues = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 25, 31, 35, 40, 45, 50, 52, 55, 60, 70, 80, 90, 100, 105, 110, 120, 130, 140, 150]
     dist = ['manhattan', 'euclidean', 'chebyshev']
 
@@ -84,3 +91,42 @@ def k_near_ngb(trnX, tstX, trnY, tstY, labels, plot):
         plt.show()
 
     return ["kNN", best_accuracy, best_specificity]
+
+
+
+def k_near_ngb_CT(trnX, tstX, trnY, tstY, labels, plot):
+    register_matplotlib_converters()
+
+
+    nvalues = [1, 3, 10, 15, 17, 19, 31, 35, 50, 52, 55, 70, 90, 100, 120, 130, 150]
+    dist = ['manhattan', 'euclidean', 'chebyshev']
+
+    acc_values = {}
+    max_accuracy = 0
+
+
+    for d in dist:
+        accuracy_values = []
+
+        for n in nvalues:
+            knn = KNeighborsClassifier(n_neighbors=n, metric=d)
+            knn.fit(trnX, trnY)
+            prdY = knn.predict(tstX)
+            accuracy = metrics.accuracy_score(tstY, prdY)
+            accuracy_values.append(accuracy)
+
+            cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+            
+            if accuracy > max_accuracy:
+                best_accuracy = [(d, n), accuracy, cnf_mtx]
+                max_accuracy = accuracy
+                
+        acc_values[d] = accuracy_values
+
+
+    if plot:
+        plt.figure()
+        func.multiple_line_chart(plt.gca(), nvalues, acc_values, 'KNN variants', 'n', 'accuracy', percentage=True)
+        plt.show()
+
+    return ["kNN", best_accuracy]

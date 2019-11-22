@@ -8,9 +8,10 @@ import seaborn as sns
 import numpy as np
 
 
-register_matplotlib_converters()
-data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-
+"""register_matplotlib_converters()
+data = pd.read_csv('Data/covtype.csv', sep=',', decimal='.')
+data = data.groupby('Cover_Type').apply(lambda s: s.sample(1000))
+print(data)"""
 
 
 # Creates a dic with a list of columns names associated to the titles given in the csv file
@@ -56,6 +57,12 @@ def group_dic(group_data, key_len, write_file):
 
 # get the data associated to a set of variables
 def get_data_from_dic(dic,group_name):
+	lst = dic[group_name]
+	return data[lst]
+
+
+# get the data associated to a set of variables
+def get_data_from_dic2(data, dic,group_name):
 	lst = dic[group_name]
 	return data[lst]
 

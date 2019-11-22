@@ -1,4 +1,3 @@
-import arff #from liac-arff package
 import pandas as pd
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -94,6 +93,7 @@ def run(source,data, group=None):
         frequent_itemsets = apriori(dummified_df, min_support=sup, use_colnames=True)        
         minconf = 0.6
         rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=minconf)
+        print("passei")
         rules["antecedent_len"] = rules["antecedents"].apply(lambda x: len(x))
         print(rules)
     
@@ -113,7 +113,6 @@ def run(source,data, group=None):
         top_rules = []
 
         for i in range(len(confidence)):
-
             avg_confidence += confidence[i]
             avg_lift += lift[i]
             avg_leverage += leverage[i]
@@ -143,6 +142,7 @@ def run(source,data, group=None):
             print(rule)
 
     ###### Multiple Line Chart with Average measures of the rules per support ######
+
 
     plt.figure(figsize=(12,4))
     series = { 'leverage': avg_leverage_list, 'avg_confidence': avg_confidence_list, 'avg_lift': avg_lift_list}
