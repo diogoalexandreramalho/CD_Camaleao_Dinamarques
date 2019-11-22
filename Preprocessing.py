@@ -20,13 +20,18 @@ from sklearn.feature_selection import chi2, f_classif, mutual_info_classif
 from sklearn.feature_selection import SelectKBest, SelectPercentile, SelectFpr
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import SelectFromModel
+from sklearn.decomposition import PCA
 
+#
+# 
+#                       A N A L Y S I S
+# 
+# 
 
-
-def balance_analysis(dataset, park):
+def balance_analysis(dataset, name):
     data = dataset.copy()
     #Prepare data
-    if(park): #Pd_dataset
+    if(name == "PD"): #Pd_dataset
         data_class = data['class']  #Save the class for later
         data.pop("id") 
         y = data.pop('class').values
@@ -58,10 +63,10 @@ def balance_analysis(dataset, park):
         accuracy.clear()
         specificity.clear()
 
-def normalize_analysis(dataset, park):
+def normalize_analysis(dataset, name):
     data = dataset.copy()
     #Prepare data
-    if(park): #Pd_dataset
+    if(name == "PD"): #Pd_dataset
         data_class = data['class']  #Save the class for later
         data.pop("id") 
         y = data.pop('class').values
@@ -93,10 +98,10 @@ def normalize_analysis(dataset, park):
         accuracy.clear()
         specificity.clear()
 
-def feature_selection_analysis(dataset, park):
+def feature_selection_analysis(dataset, name):
     data = dataset.copy()
     #Prepare data
-    if(park): #Pd_dataset
+    if(name == "PD"): #Pd_dataset
         data_class = data['class']  #Save the class for later
         data.pop("id") 
         y = data.pop('class').values
@@ -216,6 +221,45 @@ def feature_selection_analysis(dataset, park):
     
     return
 
+def pca_analysis(dataset, name):
+    data = dataset.copy()
+    if (name == "PD"):
+        clss = data.pop('class')
+        
+    n_components = np.arange(100, data.shape[0], 50)
+    
+    #Acho que nao vale a pena fazer isto
+    #svd_solvers = ["full", "arpack", "randomized"]
+    classifiers = ["Naive_Bayes", "KNN"]
+    accuracy = []
+    specificity = []
+
+    #PCA
+    print("PCA Performance")
+    for clf in classifiers:
+        for comp in n_components:
+            pca = PCA(n_components=comp, svd_solver="full")
+            pca.fit_transform(data)
+            
+            new_data = pd.DataFrame(pca.components_, columns=data.columns)
+            new_data['class'] = clss
+
+            acc, spec, conf = classify_pca(new_data, clf, name)
+            accuracy.append(acc)
+            specificity.append(spec)
+
+        performance_pca(accuracy, specificity, n_components, clf)
+        accuracy.clear()                    
+        specificity.clear()
+
+
+#
+# 
+#                       C L A S S I F Y
+# 
+# 
+
+
 def classify_balance(trnX, tstX, trnY, tstY, labels, clf, bal):
     
     trnX, tstX, trnY, tstY = norm.standardScaler(trnX, tstX, trnY, tstY)
@@ -276,6 +320,34 @@ def classify_feature_selection(X, y, clf):
     elif (clf == "KNN"):
         return knn.simple_knn(trnX, tstX, trnY, tstY, 1, "manhattan", labels)
 
+def classify_pca(dataset, clf, name):
+    data = dataset.copy()
+
+    data.pop("id") 
+    y = data.pop('class').values
+    X = data.values
+
+    labels: np.ndarray = pd.unique(y)
+    trnX, tstX, trnY, tstY = train_test_split(X, y, train_size=0.7, stratify=y)
+
+    # normalize and balance the dataset
+    trnX, tstX, trnY, tstY = norm.standardScaler(trnX, tstX, trnY, tstY)
+    trnX, trnY = balance.run(trnX, trnY, 'all', 42, False)
+
+    if (clf == "Naive_Bayes"):
+        return nb.simple_naive_bayes(trnX, tstX, trnY, tstY, labels)
+    
+    elif (clf == "KNN"):
+        return knn.simple_knn(trnX, tstX, trnY, tstY, 1, "manhattan", labels)
+
+
+#
+# 
+#                      P E R F O R M A N C E
+# 
+# 
+
+
 def performance_balance(accuracy, specificity, clf):
     print("SMOTE | None")
     print("\t Using Classifier:" + clf)
@@ -290,11 +362,11 @@ def performance_normalization(accuracy, specificity, clf):
 
 def performance_feature_selection(accuracy, specificity, features, clf, algorithm, result_features, result_perf):
     max_idx_accu = np.argmax(accuracy)
-    max_idx_sens = np.argmax(specificity)
+    max_idx_spec = np.argmax(specificity)
     
     if (algorithm == "SelectKBest" or algorithm == "SelectPercentile"):
         n_best_accu = features[max_idx_accu]
-        n_best_sens = features[max_idx_accu]
+        n_best_spec = features[max_idx_spec]
 
     accuracy = np.round(accuracy, 3)
     specificity = np.round(specificity, 3)
@@ -305,32 +377,59 @@ def performance_feature_selection(accuracy, specificity, features, clf, algorith
 
     if (algorithm == "SelectKBest"):
         print("\t\t Best accuracy: ", accuracy[max_idx_accu], "with n_features = ", n_best_accu)
-        print("\t\t Best Specificity: ", specificity[max_idx_sens], "with n_features = ", n_best_sens)
+        print("\t\t Best Specificity: ", specificity[max_idx_spec], "with n_features = ", n_best_spec)
 
         result_features["SelectKBest"][0] += n_best_accu
-        result_features["SelectKBest"][1] += n_best_sens
+        result_features["SelectKBest"][1] += n_best_spec
 
         result_perf["SelectKBest"][0] += accuracy[max_idx_accu]
-        result_perf["SelectKBest"][1] += specificity[max_idx_sens]
+        result_perf["SelectKBest"][1] += specificity[max_idx_spec]
 
     elif (algorithm == "SelectPercentile"):
         print("\t\t Best accuracy: ", accuracy[max_idx_accu], "with percentage of features = ", n_best_accu , "%")
-        print("\t\t Best Specificity: ", specificity[max_idx_sens], "with percentage of features = ", n_best_sens , "%")
+        print("\t\t Best Specificity: ", specificity[max_idx_spec], "with percentage of features = ", n_best_spec , "%")
         result_features["SelectPercentile"][0] += n_best_accu
-        result_features["SelectPercentile"][1] += n_best_sens
+        result_features["SelectPercentile"][1] += n_best_spec
 
         result_perf["SelectPercentile"][0] += accuracy[max_idx_accu]
-        result_perf["SelectPercentile"][1] += specificity[max_idx_sens]
+        result_perf["SelectPercentile"][1] += specificity[max_idx_spec]
 
 
     elif(algorithm == "Wrapper"):
         print("\t\tBest accuracy: ", accuracy[max_idx_accu], "with n_features = ", features)
-        print("\t\tBest Specificity: ", specificity[max_idx_sens], "with n_features = ", features)
+        print("\t\tBest Specificity: ", specificity[max_idx_spec], "with n_features = ", features)
         result_features["Wrapper"][0] += features
         result_features["Wrapper"][1] += features
 
         result_perf["Wrapper"][0] += accuracy[max_idx_accu]
-        result_perf["Wrapper"][1] += specificity[max_idx_sens]        
+        result_perf["Wrapper"][1] += specificity[max_idx_spec]        
+
+def performance_pca(accuracy, specificity, n_components, clf):
+    max_idx_accu = np.argmax(accuracy)
+    max_idx_spec = np.argmax(specificity)
+
+    n_best_accu = n_components[max_idx_accu]
+    n_best_spec = n_components[max_idx_spec]
+
+    accuracy = np.round(accuracy, 3)
+    specificity = np.round(specificity, 3)
+
+    print("\t Using Classifier: " + clf)
+    print("\t\t Accuracy: ", accuracy)
+    print("\t\t Specificity: ", specificity)
+
+    print("\t\t Best accuracy: ", accuracy[max_idx_accu], "with n_components = ", n_best_accu)
+    print("\t\t Best Specificity: ", specificity[max_idx_spec], "with n_components = ", n_best_spec)
+
+    return
+
+
+#
+# 
+#                A U X I L I A R   F U N C T I O N S
+# 
+# 
+
 
 def plot_feature_selection(xaxis, y1axis, y2axis, clf, algorithm):
 
@@ -370,11 +469,26 @@ def comparePerformance(result):
     print(r)
 
 
+#
+# 
+#                    P R E P R O C E S S I N G
+# 
+# 
+
+
 def preprocessing(dataset, name):
     normalize_analysis(dataset, name)
     balance_analysis(dataset, name)
     feature_selection_analysis(dataset, name)
+    pca_analysis(dataset, name)
+
+
 
 #Testing
 #dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-#preprocessing(dataset, True)
+#dataset = pd.read_csv('Data/covtype.csv', sep=',', decimal='.', skiprows=1)
+#preprocessing(dataset, "PD")
+#pca_analysis(dataset, "PD")
+#normalize_analysis(dataset, "CT")
+
+
