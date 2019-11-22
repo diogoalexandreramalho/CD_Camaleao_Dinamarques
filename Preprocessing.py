@@ -13,7 +13,7 @@ import data_balancing as balance
 import Normalize as norm
 import naive_bayes as nb
 import KNN as knn
-import decision_tree as dt
+import Decision_Tree as dt
 
 from sklearn.datasets import make_classification
 from sklearn.feature_selection import chi2, f_classif, mutual_info_classif
@@ -148,7 +148,7 @@ def feature_selection_analysis(dataset, park):
             specificity.append(spec)
 
         #plot performance graphs
-        plot_feature_selection(n_features, accuracy, specificity, clf, "SelectKBest")
+        #plot_feature_selection(n_features, accuracy, specificity, clf, "SelectKBest")
         performance_feature_selection(accuracy, specificity, n_features, clf, "SelectKBest", result_features, result_perf)
         
         accuracy.clear()
@@ -174,7 +174,7 @@ def feature_selection_analysis(dataset, park):
             specificity.append(spec)
    
         #plot performance graphs
-        plot_feature_selection(percentile, accuracy, specificity, clf, "SelectPercentile")
+        #plot_feature_selection(percentile, accuracy, specificity, clf, "SelectPercentile")
         performance_feature_selection(accuracy, specificity, percentile, clf, "SelectPercentile", result_features, result_perf)
         
         accuracy.clear()
@@ -357,23 +357,24 @@ def plot_feature_selection(xaxis, y1axis, y2axis, clf, algorithm):
 
 def compareFeatures(result):
     print("Comparing Features: SelectKBest (n_features) | SelectPercentile (%_features) | Wrapper (n_features) |")
-    r = ''
+    r = '\t\t\t'
     for feat in result.values():
         r += str(feat[0]) + " | "
     print(r)
 
 def comparePerformance(result):
     print("Comparing Performance [Accuracy, Specificity]: SelectKBest | SelectPercentile | Wrapper |")
-    r = ''
+    r = '\t\t\t'
     for perf in result.values():
         r += str(perf) + " | "
     print(r)
 
 
-#Testing
-#dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-
 def preprocessing(dataset, name):
     normalize_analysis(dataset, name)
     balance_analysis(dataset, name)
     feature_selection_analysis(dataset, name)
+
+#Testing
+#dataset = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+#preprocessing(dataset, True)

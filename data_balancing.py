@@ -11,7 +11,7 @@ from imblearn.over_sampling import SMOTE, RandomOverSampler
 import Normalize as norm
 import naive_bayes as nb
 import KNN as knn
-import decision_tree as dt
+import Decision_Tree as dt
 
 '''
 Prints the values for the class, and plots a bar_chart showing the
