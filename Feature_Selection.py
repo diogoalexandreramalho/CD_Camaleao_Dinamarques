@@ -18,10 +18,11 @@ import Normalize as norm
 import naive_bayes as nb
 import KNN as knn
 
-def feature_selection(dataset, park):
+#Note: Feature Selection removes ID for PD dataset
+def feature_selection(dataset, name):
     data = dataset.copy()
     #Prepare data
-    if(park): #Pd_dataset   
+    if(name == "PD"): #Pd_dataset   
     
         data_class = data['class']  #Save the class for later
         data.pop("id") # Remove id, because we don't care, maybe remove at the begining
