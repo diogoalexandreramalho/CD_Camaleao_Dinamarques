@@ -20,6 +20,18 @@ def simple_naive_bayes(trnX, tstX, trnY, tstY, labels):
     return accuracy, specificity, cnf_matrix
 
 
+def simple_naive_bayes_CT(trnX, tstX, trnY, tstY, labels):
+
+    nb = GaussianNB()
+    nb.fit(trnX, trnY)
+    prdY = nb.predict(tstX)
+    accuracy = metrics.accuracy_score(tstY, prdY)
+
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+    
+    return accuracy, cnf_mtx
+
+
 def naive_bayes(trnX, tstX, trnY, tstY, labels, plot):
     register_matplotlib_converters()
 

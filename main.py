@@ -4,7 +4,9 @@ import Classification as classif
 import Unsupervised as unsup
 
 def report(source, dataframe, task):
-    task = task[:-1]
+    
+    print(dataframe)
+    """task = task[:-1]
     
     dataframe.insert(755, 'class', 0)
     i = 0
@@ -12,11 +14,11 @@ def report(source, dataframe, task):
         new_value = int(value[:-1])
         dataframe.loc[i, 'class'] = new_value
         i+=1
-    del dataframe['class\r']
-    
+    del dataframe['class\r']"""
+
 
     if task == "classification":
-        classif.classification(dataframe)
+        classif.classification(dataframe, source)
     elif task == "unsupervised":
         unsup.run(source, dataframe)
     else:

@@ -22,10 +22,84 @@ def simple_decision_tree(trnX, tstX, trnY, tstY, n, d, f, labels):
     return accuracy, specificity, cnf_matrix
 
 
+
+def simple_decision_tree_CT(trnX, tstX, trnY, tstY, n, d, f, labels):
+
+    dt = DecisionTreeClassifier(min_samples_leaf=n, max_depth=d, criterion=f)
+    dt.fit(trnX, trnY)
+    prdY = dt.predict(tstX)
+
+    accuracy = metrics.accuracy_score(tstY, prdY)
+    cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+    
+    return accuracy, cnf_mtx
+
+
+
+def decision_tree_CT(trnX, tstX, trnY, tstY, labels, plot, png):
+
+    min_samples_leaf = [.01, .0075, .005, .0025, .001, .0005, .0004, .0003, .0002, .0001, .00008, .00005, .00003]
+    max_depths = [10, 30, 50, 70, 100, 150, 200]
+    criteria = ['entropy', 'gini']
+
+    max_accuracy = 0
+
+
+    plt.figure()
+    fig, axs = plt.subplots(1, 2, figsize=(16, 4), squeeze=False)
+    for k in range(len(criteria)):
+        f = criteria[k]
+        acc_values = {}
+        for d in max_depths:
+            accuracy_values = []
+            for n in min_samples_leaf:
+                tree = DecisionTreeClassifier(min_samples_leaf=n, max_depth=d, criterion=f)
+                tree.fit(trnX, trnY)
+                prdY = tree.predict(tstX)
+
+                # accuracy for criteria = f, max_depth = d, min_samples_leaf = n
+                accuracy = metrics.accuracy_score(tstY, prdY)
+                accuracy_values.append(accuracy)
+
+                cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
+
+                if accuracy > max_accuracy:
+                    best_accuracy = [(f, d, n), accuracy, cnf_mtx]
+                    max_accuracy = accuracy
+                
+
+            acc_values[d] = accuracy_values
+
+        func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'min samples leaf', 
+                                 'accuracy', percentage=True)
+
+
+
+    if plot:
+        plt.show()
+
+
+    if png:
+        tree = DecisionTreeClassifier(min_samples_leaf=best_accuracy[1], max_depth=best_accuracy[0][1], criterion=best_accuracy[0][0])
+
+        dot_data = export_graphviz(tree, out_file='dtree.dot', filled=True, rounded=True, special_characters=True)  
+        # Convert to png
+        call(['dot', '-Tpng', 'dtree.dot', '-o', 'dtree.png', '-Gdpi=600'])
+
+        plt.figure(figsize = (14, 18))
+        plt.imshow(plt.imread('dtree.png'))
+        plt.axis('off')
+        plt.show()
+
+
+    return ["Decision Tree", best_accuracy]
+
+
+
 def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
 
     min_samples_leaf = [.05, .025, .02, .015, .01, .0075, .005, .0025, .001]
-    max_depths = [5, 10, 25, 50, 100, 200, 400]
+    max_depths = [5, 10, 25, 30, 40, 45, 50, 55, 60, 70, 100, 200, 400]
     criteria = ['entropy', 'gini']
 
     max_accuracy = 0
@@ -68,7 +142,7 @@ def decision_tree(trnX, tstX, trnY, tstY, labels, plot, png):
             acc_values[d] = accuracy_values
             spec_values[d] = specificity_values
 
-        func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'nr estimators', 
+        func.multiple_line_chart(axs[0, k], min_samples_leaf, acc_values, 'Decision Trees with %s criteria'%f, 'min samples leaf', 
                                  'accuracy', percentage=True)
 
 
