@@ -19,8 +19,6 @@ import time
 import datetime
 
 
-
-
 def classification(data, source, analysis):
 
     if source == "CT":
@@ -54,12 +52,12 @@ def classification(data, source, analysis):
         #knn_report = knn.k_near_ngb(trnX, tstX, trnY, tstY, labels, True)
         #print("DT")
         #dt_report = dt.decision_tree(trnX, tstX, trnY, tstY, labels, True, False)
-        print("RF")
-        rf_report = rf.random_forest(trnX, tstX, trnY, tstY, labels, True)
+        #print("RF")
+        #rf_report = rf.random_forest(trnX, tstX, trnY, tstY, labels, True)
         #print("GB")
-        #gb_report = gb.gradient_boost(trnX, tstX, trnY, tstY, labels, False)
-        #print("XGB")
-        #xgb_report = xgb.xg_boost(trnX, tstX, trnY, tstY, labels, False)
+        #gb_report = gb.gradient_boost(trnX, tstX, trnY, tstY, labels, True)
+        print("XGB")
+        xgb_report = xgb.xg_boost(trnX, tstX, trnY, tstY, labels, True)
         end = time.time() - start
         time1 = str(datetime.timedelta(seconds=end)) 
         print("Time: " + time1)
@@ -72,17 +70,17 @@ def classification(data, source, analysis):
         #knn_report = knn.k_near_ngb_CT(trnX, tstX, trnY, tstY, labels, True)
         #print("DT")
         #dt_report = dt.decision_tree_CT(trnX, tstX, trnY, tstY, labels, True, False)
-        print("RF")
-        rf_report = rf.random_forest_CT(trnX, tstX, trnY, tstY, labels, True)
+        #print("RF")
+        #rf_report = rf.random_forest_CT(trnX, tstX, trnY, tstY, labels, True)
         #print("GB")
         #gb_report = gb.gradient_boost_CT(trnX, tstX, trnY, tstY, labels, True)
-        #print("XGB")
-        #xgb_report = xgb.xg_boost_CT(trnX, tstX, trnY, tstY, labels, False)
+        print("XGB")
+        xgb_report = xgb.xg_boost_CT(trnX, tstX, trnY, tstY, labels, True)
         end = time.time() - start
         time1 = str(datetime.timedelta(seconds=end)) 
         print("Time: " + time1)
 
-    reports = [rf_report]
+    reports = [xgb_report]
     #reports = [nb_report, knn_report, dt_report, rf_report, gb_report, xgb_report]
     
     if source == "PD":
@@ -94,10 +92,10 @@ def classification(data, source, analysis):
 
 def produce_analysis():
 
-    data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
-    #data = pd.read_csv('Data/covtype.csv', sep=',', decimal='.')
+    #data = pd.read_csv('Data/pd_speech_features.csv', sep=',', decimal='.', skiprows=1)
+    data = pd.read_csv('Data/covtype.csv', sep=',', decimal='.')
 
-    classification(data, "PD", True)
+    classification(data, "CT", True)
 
 
 produce_analysis()

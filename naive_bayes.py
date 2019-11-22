@@ -33,6 +33,7 @@ def simple_naive_bayes_CT(trnX, tstX, trnY, tstY, labels):
     return accuracy, cnf_mtx
 
 
+
 def naive_bayes_CT(trnX, tstX, trnY, tstY, labels):
 
     nb = GaussianNB()

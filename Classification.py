@@ -20,11 +20,12 @@ import print_statistics as stats
 def classification(data, source):
 
     if source == "CT":
-        data = data.groupby('Cover_Type').apply(lambda s: s.sample(1000))
-
+        target = 'Cover_Type'
+    else:
+        target = 'class'
 
     # split data set in target variable and atributes
-    y: np.ndarray = data.pop('class').values
+    y: np.ndarray = data.pop(target).values
     X: np.ndarray = data.values
     labels: np.ndarray = pd.unique(y)
 
@@ -115,7 +116,7 @@ def classification(data, source):
 
         stats.print_report(reports, (True, True))
     else:
-        params = [('GaussianNB'), ('manhattan', 1), ('entropy', 50, 0.00005), ('sqrt', 25, 185), ('sqrt', 5, 100, 0.1), (5, 200)]
+        params = [('GaussianNB'), ('manhattan', 1), ('entropy', 50, 0.00005), ('sqrt', 25, 185), ('sqrt', 10, 300, 0.05), (10, 300)]
         
         nb_report = [clf_names[0], [params[0], avg_accuracys[0], cnf_mtxs[0]]]
         knn_report =[clf_names[1], [params[1], avg_accuracys[1], cnf_mtxs[1]]]

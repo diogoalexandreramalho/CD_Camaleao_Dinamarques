@@ -124,8 +124,10 @@ def random_forest(trnX, tstX, trnY, tstY, labels, plot):
             acc_values[d] = accuracy_values
             spec_values[d] = specificity_values
 
-        func.multiple_line_chart(axs[0, k], n_estimators, acc_values, 'Random Forests with %s features'%f, 'nr estimators', 
-                                 'accuracy', percentage=True)
+        """func.multiple_line_chart(axs[0, k], n_estimators, acc_values, 'Random Forests with %s features'%f, 'nr estimators', 
+                                 'accuracy', percentage=True)"""
+        func.multiple_line_chart(axs[0, k], n_estimators, spec_values, 'Random Forests with %s features'%f, 'nr estimators', 
+                                 'specificity', percentage=True)
 
     if plot:
         plt.show()
