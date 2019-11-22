@@ -119,8 +119,10 @@ def xg_boost(trnX, tstX, trnY, tstY, labels, plot):
         spec_values[d] = specificity_values
 
                 
-        func.multiple_line_chart(plt.gca(), n_estimators, acc_values, 'XG Boost', 'nr estimators', 
-                                 'accuracy', percentage=True)
+        """func.multiple_line_chart(plt.gca(), n_estimators, acc_values, 'XG Boost', 'nr estimators', 
+                                 'accuracy', percentage=True)"""
+        func.multiple_line_chart(plt.gca(), n_estimators, spec_values, 'XG Boost', 'nr estimators', 
+                                 'specificity', percentage=True)
 
     if plot:
         plt.show()

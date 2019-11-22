@@ -111,6 +111,7 @@ def gradient_boost(trnX, tstX, trnY, tstY, labels, plot):
             specificity_values = []
             for n in n_estimators:
                 max_learning_accuracy = 0
+                max_learning_specificity = 0
 
                 for l in lr_list:
                     gb = GradientBoostingClassifier(n_estimators=n, learning_rate=l, max_depth=d, max_features=f)
@@ -121,7 +122,6 @@ def gradient_boost(trnX, tstX, trnY, tstY, labels, plot):
 
                     tn, fp, fn, tp = metrics.confusion_matrix(tstY, prdY, labels).ravel()
                     specificity = tp/(tp+fn)
-                    specificity_values.append(specificity)
 
                     cnf_mtx = metrics.confusion_matrix(tstY, prdY, labels)
 
@@ -135,16 +135,22 @@ def gradient_boost(trnX, tstX, trnY, tstY, labels, plot):
                     
                     if accuracy > max_learning_accuracy:
                         max_learning_accuracy = accuracy 
+                    
+                    if specificity > max_learning_specificity:
+                        max_learning_specificity = specificity 
                 
                 accuracy_values.append(max_learning_accuracy)
+                specificity_values.append(max_learning_specificity)
 
             acc_values[d] = accuracy_values
             spec_values[d] = specificity_values
 
                 
                 
-        func.multiple_line_chart(axs[0, k], n_estimators, acc_values, 'Gradient Boost with %s features'%f, 'nr estimators', 
-                                 'accuracy', percentage=True)
+        """func.multiple_line_chart(axs[0, k], n_estimators, acc_values, 'Gradient Boost with %s features'%f, 'nr estimators', 
+                                 'accuracy', percentage=True)"""
+        func.multiple_line_chart(axs[0, k], n_estimators, spec_values, 'Gradient Boost with %s features'%f, 'nr estimators', 
+                                 'specificity', percentage=True)
 
     if plot:
         plt.show()
