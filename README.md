@@ -22,7 +22,6 @@
       <li>Preprocessing</li>
       <li>Pattern Mining</li>
       <li>Clustering</li>
-      <li></li>
     </ol>
   </li>
   <li>Classification</li>
