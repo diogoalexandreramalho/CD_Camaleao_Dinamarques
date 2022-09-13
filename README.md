@@ -36,21 +36,31 @@ Features of the observations relate to elevation, slope, distance to water, sunl
 
 ## Methodology
 
-<ol>
-  <li>Statistical Description (Atts x Instances, values Domain, Distributions, Outliers)</li>
-  <li>Unsupervised Learning
-    <ol>
-      <li>Preprocessing</li>
-      <li>Pattern Mining</li>
-      <li>Clustering</li>
-    </ol>
-  </li>
-  <li>Classification</li>
-    <ol>
-      <li>Naïve Bayes</li>
-      <li>Decision Trees</li>
-      <li>kNN</li>
-      <li>Random Forests</li>
-      <li>XGBoost</li>
-    </ol>
-</ol>
+### Statistical Analysis
+
+### Unsupervised Learning
+
+#### Preprocessing
+* Feature scaling
+* Feature selection
+* Data Balancing
+* PCA
+
+#### Pattern Mining
+
+#### Clustering
+
+
+### Classification
+
+The main goal in this step was to tune the parameters of each model to obtain the best performance.
+
+#### Naïve Bayes
+
+#### Decision Trees
+
+#### kNN
+
+#### Random Forests
+
+#### XGBoost
