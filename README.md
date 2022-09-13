@@ -1,11 +1,8 @@
 # Data Science
 
-The goals of this project include:
-
-* Application of data science techniques to discover information in two distinct problems (datasets).
-* Explore the datasets and select, learn and compare the models for the available data.
-* Criticize the results achieved
-* Hypothesize causes for the limited performance of the learned models
+The goal of this project is to solve 2 classification problems:
+* Classify Parkinson's disease from speech (binary classification)
+* Classify forest cover type (type of trees) from cartographic data (multiclass classification)
 
 ---
 
@@ -17,14 +14,21 @@ The data used in this study was gathered from 188 patients with PD at the Depart
 
 Various speech signal processing algorithms including Time Frequency Features, Mel Frequency Cepstral Coefficients (MFCCs), Wavelet Transform based Features, Vocal Fold Features and TWQT features have been applied to the speech recordings of Parkinson's Disease (PD) patients to extract clinically useful information for PD assessment.
 
-* Number of features = $754$
-* Number of instances = $756 (3 * (188+64))$
+* Number of features $n = 754$
+* Number of instances $m = 756 = (3 * (188+64))$
 * Target: binary (0 = no Parkinson, 1 = has Parkinson)
 
 
 ### [Covertype](https://archive.ics.uci.edu/ml/datasets/Covertype) (covtype.info + covtype.data)
 
 The actual forest cover type for a given observation (30 x 30 meter cell) was determined from US Forest Service (USFS) Region 2 Resource Information System (RIS) data.
+
+Features of the observations relate to elevation, slope, distance to water, sunlight intensity, soil.
+ 
+
+* Number of features $n = 54$
+* Number of instances $m = 581012$
+* Target: 7 classes - Spruce/Fir, Lodgepole Pine, Ponderosa Pine, Cottonwood/Willow, Aspen, Douglas Fir, or Krummholz
 
 
 
